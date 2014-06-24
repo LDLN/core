@@ -92,6 +92,15 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     				s := []string{"client_diff_request", action}
     				revel.TRACE.Println(strings.Join(s, " : "))
     				
+/*
+    				var m := make(map[string] string)
+    				m = dat["object_uuids"]
+    				
+    				for k := range m {
+						revel.TRACE.Println("%s:", k)
+					}
+*/
+    				
     			case "client_update_request":
     				s := []string{"client_update_request", action}
     				revel.TRACE.Println(strings.Join(s, " : "))
