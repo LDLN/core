@@ -4,10 +4,17 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/revel/revel"
 	"basestation/app/chatroom"
+	"strings"
+	"encoding/json"
+/* 	"io" */
 )
 
 type App struct {
 	*revel.Controller
+}
+
+type Message struct {
+	Action, Objects string
 }
 
 func (c App) Index() revel.Result {
@@ -39,8 +46,58 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 			err := websocket.Message.Receive(ws, &msg)
 			if err != nil {
 				close(newMessages)
+				revel.TRACE.Printf("err != nil - newMessages: %s", newMessages)
 				return
 			}
+			
+			
+			
+			revel.TRACE.Printf(msg)
+/*
+			dec := json.NewDecoder(strings.NewReader(msg))
+			
+			var m Message
+			if err := dec.Decode(&m); err == io.EOF {
+				break
+			} else if err != nil {
+				revel.ERROR.Printf("%s", err)
+			}
+			revel.TRACE.Printf("action: %s", m.Action)
+			revel.TRACE.Printf("object_uuids: %s", m.Objects)
+*/
+			
+
+			byt := []byte((msg))
+			var dat map[string]interface{}
+			if err := json.Unmarshal(byt, &dat); err != nil {
+        		panic(err)
+    		}
+    		revel.TRACE.Println(dat)
+			
+			
+			action := dat["action"].(string)
+    		revel.TRACE.Println(action)
+    		
+    		switch(action) {
+    		
+    			case "client_get_users":
+    				s := []string{"client_get_users", action}
+    				revel.TRACE.Println(strings.Join(s, " : "))
+    		
+    			case "client_get_schema":
+    				s := []string{"client_get_schema", action}
+    				revel.TRACE.Println(strings.Join(s, " : "))
+    				
+    			case "client_diff_request":
+    				s := []string{"client_diff_request", action}
+    				revel.TRACE.Println(strings.Join(s, " : "))
+    				
+    			case "client_update_request":
+    				s := []string{"client_update_request", action}
+    				revel.TRACE.Println(strings.Join(s, " : "))
+    				
+    		}
+			
 			newMessages <- msg
 		}
 	}()
@@ -60,7 +117,8 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 			}
 
 			// Otherwise, say something.
-			chatroom.Say(user, msg)
+			s := []string{"this", msg};
+			chatroom.Say(user, strings.Join(s, " - "))
 		}
 	}
 	return nil
