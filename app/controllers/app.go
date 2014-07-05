@@ -99,6 +99,8 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 					
 					// prep response
 					response_map["action"] = "server_diff_response"
+					var server_unknown_object_uuids []interface{}
+					var modified_objects []interface{}
 					
 					// loop through object_uuids
 					for k, v := range dat["object_uuids"].(map[string]interface{}) {
@@ -118,17 +120,61 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 						err = c.Find(bson.M{"uuid": k}).One(&result)
 				        if err != nil {
 							
+							// add unknowns to unknowns array
 							revel.TRACE.Println(err)
+							server_unknown_object_uuids = append(server_unknown_object_uuids, k)
 							
 				        } else {
 							
-							// display results
+							// debug results
 							revel.TRACE.Println(result)
 							revel.TRACE.Println(result["uuid"])
-							revel.TRACE.Println(result["name"])
+							revel.TRACE.Println(result["time_modified_since_creation"])
+							
+							// if there's a difference in time_modified_since_creation
+							var smsc float64
+							smsc = v.(float64)
+							msc := result["time_modified_since_creation"].(float64)
+							if smsc > msc {
+								
+								// client has updated more recently than server - put in unknown_object_uuids array
+								server_unknown_object_uuids = append(server_unknown_object_uuids, k)
+							
+							} else if smsc < msc {
+								
+								// server has updated more recently than client - put in modified_objects array
+								syncable_object_map := make(map[string]interface{})
+								syncable_object_map["uuid"] = result["uuid"]
+								syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
+								syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+								
+								modified_objects = append(modified_objects, syncable_object_map)
+							}
 						}
-						
 					}
+						
+					// find things that client does not have
+						
+					// connect to mongodb
+					session, err := mgo.Dial("localhost")
+			        if err != nil {
+						panic(err)
+			        }
+			        defer session.Close()
+					
+					// find from mongodb
+					c := session.DB("landline").C("SyncableObjects")
+					var result map[string]interface{}
+					err = c.Find(bson.M{"uuid": { "$not" :  } }).All(&result)
+					if err != nil {
+						
+						revel.TRACE.Println(err)
+						
+			        }
+						
+						
+					response_map["server_unknown_object_uuids"] = server_unknown_object_uuids
+					response_map["modified_objects"] = modified_objects
     				
     			case "client_update_request":
     				s := []string{"client_update_request", action}
