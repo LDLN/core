@@ -77,6 +77,13 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 			
 			// init response
 			response_map := make(map[string]interface{})
+						
+			// connect to mongodb
+			session, err := mgo.Dial("localhost")
+	        if err != nil {
+				panic(err)
+	        }
+	        defer session.Close()
 			
 			// get action string
 			action := dat["action"].(string)
@@ -84,8 +91,36 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     		switch(action) {
     		
     			case "client_get_users":
-    				s := []string{"client_get_users", action}
-    				revel.TRACE.Println(strings.Join(s, " : "))
+					
+					// prep response
+					response_map["action"] = "server_send_users"
+					var users_array []interface{}
+				
+					// query
+					c := session.DB("landline").C("Users")
+					var results []map[string]interface{}
+					err = c.Find(bson.M{}).All(&results)
+					if err != nil {
+							
+						revel.TRACE.Println(err)
+						
+			        } else {
+						revel.TRACE.Println(results)
+						
+						for u, result := range results {
+							revel.TRACE.Println(u)
+							revel.TRACE.Println(result)
+							revel.TRACE.Println(result["username"].(string))
+							
+							user_object_map := make(map[string]string)
+							user_object_map["username"] = result["username"].(string)
+							user_object_map["hashed_password"] = result["hashed_password"].(string)
+							user_object_map["encrypted_kek"] = result["encrypted_kek"].(string)
+							users_array = append(users_array, user_object_map)
+						}
+					}
+					
+					response_map["users"] = users_array
     		
     			case "client_get_schema":
     				s := []string{"client_get_schema", action}
@@ -106,13 +141,6 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 					for k, v := range dat["object_uuids"].(map[string]interface{}) {
 						revel.TRACE.Println(k)
 						revel.TRACE.Println(v)
-						
-						// connect to mongodb
-						session, err := mgo.Dial("localhost")
-				        if err != nil {
-							panic(err)
-				        }
-				        defer session.Close()
 						
 						// find from mongodb
 						c := session.DB("landline").C("SyncableObjects")
