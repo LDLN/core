@@ -6,6 +6,8 @@ import (
 	"landline-basestation/app/chatroom"
 	"strings"
 	"encoding/json"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 /* 	"io" */
 )
 
@@ -17,8 +19,21 @@ type Message struct {
 	Action, Objects string
 }
 
+type SyncableObject struct {
+	uuid string
+	name string
+}
+
 func (c App) Index() revel.Result {
 	return c.Render()
+}
+
+func parseObjectUUIDs(m map[string]interface{}) {
+				
+	for k, v := range m {
+		revel.TRACE.Println(k)
+		revel.TRACE.Println(v)
+	}
 }
 
 func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
@@ -50,23 +65,9 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 				return
 			}
 			
-			
-			
 			revel.TRACE.Printf(msg)
-/*
-			dec := json.NewDecoder(strings.NewReader(msg))
 			
-			var m Message
-			if err := dec.Decode(&m); err == io.EOF {
-				break
-			} else if err != nil {
-				revel.ERROR.Printf("%s", err)
-			}
-			revel.TRACE.Printf("action: %s", m.Action)
-			revel.TRACE.Printf("object_uuids: %s", m.Objects)
-*/
-			
-
+			// unmarshal the json
 			byt := []byte((msg))
 			var dat map[string]interface{}
 			if err := json.Unmarshal(byt, &dat); err != nil {
@@ -74,10 +75,12 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     		}
     		revel.TRACE.Println(dat)
 			
+			// init response
+			response_map := make(map[string]interface{})
 			
+			// get action string
 			action := dat["action"].(string)
     		revel.TRACE.Println(action)
-    		
     		switch(action) {
     		
     			case "client_get_users":
@@ -91,15 +94,41 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     			case "client_diff_request":
     				s := []string{"client_diff_request", action}
     				revel.TRACE.Println(strings.Join(s, " : "))
-    				
-/*
-    				var m := make(map[string] string)
-    				m = dat["object_uuids"]
-    				
-    				for k := range m {
-						revel.TRACE.Println("%s:", k)
+					
+					revel.TRACE.Println(dat["object_uuids"])
+					
+					// prep response
+					response_map["action"] = "server_diff_response"
+					
+					// loop through object_uuids
+					for k, v := range dat["object_uuids"].(map[string]interface{}) {
+						revel.TRACE.Println(k)
+						revel.TRACE.Println(v)
+						
+						// connect to mongodb
+						session, err := mgo.Dial("localhost")
+				        if err != nil {
+							panic(err)
+				        }
+				        defer session.Close()
+						
+						// find from mongodb
+						c := session.DB("landline").C("SyncableObjects")
+						var result map[string]interface{}
+						err = c.Find(bson.M{"uuid": k}).One(&result)
+				        if err != nil {
+							
+							revel.TRACE.Println(err)
+							
+				        } else {
+							
+							// display results
+							revel.TRACE.Println(result)
+							revel.TRACE.Println(result["uuid"])
+							revel.TRACE.Println(result["name"])
+						}
+						
 					}
-*/
     				
     			case "client_update_request":
     				s := []string{"client_update_request", action}
@@ -107,7 +136,19 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     				
     		}
 			
+			// send initial message
 			newMessages <- msg
+			
+			// form json server response message 
+			response_json_map, err := json.Marshal(response_map)
+			if err != nil {
+				revel.TRACE.Println(err)
+			}
+			revel.TRACE.Println(string(response_json_map[:]))
+			revel.TRACE.Println(response_json_map)
+			
+			// send server response message
+			newMessages <- string(response_json_map[:])
 		}
 	}()
 
@@ -126,8 +167,7 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 			}
 
 			// Otherwise, say something.
-			s := []string{"this", msg};
-			chatroom.Say(user, strings.Join(s, " - "))
+			chatroom.Say(user, msg)
 		}
 	}
 	return nil
