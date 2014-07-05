@@ -3,7 +3,7 @@ package controllers
 import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/revel/revel"
-	"basestation/app/chatroom"
+	"landline-basestation/app/chatroom"
 	"strings"
 	"encoding/json"
 /* 	"io" */
