@@ -21,7 +21,14 @@ type Message struct {
 
 type SyncableObject struct {
 	uuid string
-	name string
+	key_value_pairs string
+	time_modified_since_creation float64
+}
+
+type UserObject struct {
+	username string
+	hashed_password string
+	encrypted_kek string
 }
 
 func (c App) Index() revel.Result {
@@ -127,8 +134,6 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
     				revel.TRACE.Println(strings.Join(s, " : "))
     				
     			case "client_diff_request":
-    				s := []string{"client_diff_request", action}
-    				revel.TRACE.Println(strings.Join(s, " : "))
 					
 					revel.TRACE.Println(dat["object_uuids"])
 					

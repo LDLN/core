@@ -1,0 +1,15 @@
+{{set . "title" "Login"}}
+{{template "header.html" .}}
+
+<form action="/login" method="POST" autocomplete="off">
+    <label for="username">Username</label><br/>
+    <input type="text" name="username" autocomplete="off" /><br/>
+	
+    <label for="password">Password</label><br/>
+    <input type="password" name="password" autocomplete="off" /><br/>
+	
+    <input type="submit" value="Login" />
+</form>
+
+
+{{template "footer.html" .}}
