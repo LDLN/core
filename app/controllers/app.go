@@ -129,9 +129,49 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 					
 					response_map["users"] = users_array
     		
-    			case "client_get_schema":
-    				s := []string{"client_get_schema", action}
-    				revel.TRACE.Println(strings.Join(s, " : "))
+    			case "client_get_schemas":
+					
+					// prep response
+					response_map["action"] = "server_send_schemas"
+					var schemas_array []interface{}
+				
+					// query
+					c := session.DB("landline").C("Schemas")
+					var results []map[string]interface{}
+					err = c.Find(bson.M{}).All(&results)
+					if err != nil {
+							
+						revel.TRACE.Println(err)
+						
+			        } else {
+						revel.TRACE.Println(results)
+						
+						for u, result := range results {
+							revel.TRACE.Println(u)
+							
+							schema_object_map := make(map[string]interface{})
+							schema_object_map["object_key"] = result["object_key"].(string)
+							schema_object_map["object_label"] = result["object_label"].(string)
+							schema_object_map["weight"] = result["weight"].(float64)
+							
+							var fields_array []map[string]interface{}
+							for f, field := range result["schema"].([]interface{}) {
+								revel.TRACE.Println(f)
+								revel.TRACE.Println(field)
+								
+								field_object_map := make(map[string]interface{})
+								field_object_map["label"] = field.(map[string]interface{})["label"].(string)
+								field_object_map["type"] = field.(map[string]interface{})["type"].(string)
+								field_object_map["weight"] = field.(map[string]interface{})["weight"].(float64)
+								fields_array = append(fields_array, field_object_map)
+							}
+							schema_object_map["schema"] = fields_array
+							
+							schemas_array = append(schemas_array, schema_object_map)
+						}
+					}
+					
+					response_map["schemas"] = schemas_array
     				
     			case "client_diff_request":
 					
