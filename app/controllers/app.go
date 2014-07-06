@@ -181,11 +181,17 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 					response_map["action"] = "server_diff_response"
 					var server_unknown_object_uuids []interface{}
 					var modified_objects []interface{}
+					var client_unknown_objects []interface{}
 					
 					// loop through object_uuids
+ 					var object_uuid_client_knowns []interface{}
 					for k, v := range dat["object_uuids"].(map[string]interface{}) {
+						
 						revel.TRACE.Println(k)
 						revel.TRACE.Println(v)
+						
+						// build list that which client does not have - for later use
+ 						object_uuid_client_knowns = append(object_uuid_client_knowns, k)
 						
 						// find from mongodb
 						c := session.DB("landline").C("SyncableObjects")
@@ -225,22 +231,37 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 							}
 						}
 					}
+					revel.TRACE.Println(object_uuid_client_knowns)
 						
 					// find things that client does not have
-					
-					// find from mongodb
-					c := session.DB("landline").C("SyncableObjects")
-					var result map[string]interface{}
-					err = c.Find(bson.M{"uuid": bson.M{ "$not" :  } }).All(&result)
+					cb := session.DB("landline").C("SyncableObjects")
+					var m_result []map[string]interface{}
+					err = cb.Find(bson.M{"uuid" : bson.M{ "$not" : bson.M{ "$in" : object_uuid_client_knowns} } } ).All(&m_result)
 					if err != nil {
 						
 						revel.TRACE.Println(err)
 						
-			        }
+			        } else {
+						
+						for u, result := range m_result {
+							revel.TRACE.Println(u)
+							revel.TRACE.Println(result)
+							
+							// object that the client does not know about
+							syncable_object_map := make(map[string]interface{})
+							syncable_object_map["uuid"] = result["uuid"]
+							syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
+							syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+							
+							client_unknown_objects = append(client_unknown_objects, syncable_object_map)
+						}
+						
+					}
 						
 						
 					response_map["server_unknown_object_uuids"] = server_unknown_object_uuids
 					response_map["modified_objects"] = modified_objects
+					response_map["client_unknown_objects"] = client_unknown_objects
     				
     			case "client_update_request":
     				s := []string{"client_update_request", action}
