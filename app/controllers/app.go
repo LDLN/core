@@ -227,23 +227,16 @@ func (c App) RoomSocket(user string, ws *websocket.Conn) revel.Result {
 					}
 						
 					// find things that client does not have
-						
-					//// connect to mongodb
-					//session, err := mgo.Dial("localhost")
-			  //      if err != nil {
-					//	panic(err)
-			  //      }
-			  //      defer session.Close()
 					
-					//// find from mongodb
-					//c := session.DB("landline").C("SyncableObjects")
-					//var result map[string]interface{}
-					//err = c.Find(bson.M{"uuid": { "$not" : "fdsa".(string) } }).All(&result)
-					//if err != nil {
+					// find from mongodb
+					c := session.DB("landline").C("SyncableObjects")
+					var result map[string]interface{}
+					err = c.Find(bson.M{"uuid": bson.M{ "$not" :  } }).All(&result)
+					if err != nil {
 						
-					//	revel.TRACE.Println(err)
+						revel.TRACE.Println(err)
 						
-			  //      }
+			        }
 						
 						
 					response_map["server_unknown_object_uuids"] = server_unknown_object_uuids
