@@ -4,7 +4,7 @@
 
 module:testrunner
 
-GET     /                                       App.Index
+GET     /chatroom                               App.Chatroom
 WS      /ws                                     App.RoomSocket
 
 GET     /users                                  Web.CreateUserForm

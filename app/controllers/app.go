@@ -31,7 +31,7 @@ type UserObject struct {
 	encrypted_kek string
 }
 
-func (c App) Index() revel.Result {
+func (c App) Chatroom() revel.Result {
 	return c.Render()
 }
 

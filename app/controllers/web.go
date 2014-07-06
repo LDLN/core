@@ -15,7 +15,7 @@ import (
 )
 
 const salt = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
-const temp_transient_kek = "0ZugMhBCrbgdUcLeCTvN8QSjKnE8PHZsimDmXrkwpFRIDVrkGqJn061Bat8l34bcWROw0GEe3VtBifVy"
+const temp_transient_kek = "ckxUIcinOui2w7wNARGz7bIrTX67rTYh"
 
 type Web struct {
 	*revel.Controller
@@ -65,7 +65,7 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		bdec, err := hex.DecodeString(result["encrypted_kek"])
 		if err != nil {
 			revel.TRACE.Println(err)
-			return c.Redirect(App.Index)
+			return c.Redirect(Web.LoginForm)
 		}
 		kek := decrypt(key, bdec)
 			
@@ -74,7 +74,7 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		revel.TRACE.Println(kek)
 						
 		// redirect
-		return c.Redirect(App.Index)
+		return c.Redirect(App.Chatroom)
 	}
 						
 	// redirect
