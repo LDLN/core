@@ -6,6 +6,7 @@ module:testrunner
 
 GET     /chatroom                               App.Chatroom
 WS      /ws                                     App.RoomSocket
+WS      /ws_duo                                 Socket.RoomSocket
 
 GET     /users                                  Web.CreateUserForm
 POST    /users                                  Web.CreateUserAction
