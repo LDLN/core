@@ -67,6 +67,8 @@ func (msg_obj *Message) parse(c *Client) {
 				user_object_map["username"] = result["username"].(string)
 				user_object_map["hashed_password"] = result["hashed_password"].(string)
 				user_object_map["encrypted_kek"] = result["encrypted_kek"].(string)
+				user_object_map["encrypted_rsa_private"] = result["encrypted_rsa_private"].(string)
+				user_object_map["rsa_public"] = result["rsa_public"].(string)
 				users_array = append(users_array, user_object_map)
 			}
 		}
