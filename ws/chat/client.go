@@ -104,7 +104,7 @@ func (c *Client) listenRead() {
 				c.server.Err(err)
 			} else {
 				msg.parse(c)
-				c.server.SendAll(&msg)
+				//c.server.SendAll(&msg)
 			}
 		}
 	}
