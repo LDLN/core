@@ -5,7 +5,6 @@ import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
-	"strings"
 )
 
 type Message struct {
@@ -209,9 +208,74 @@ func (msg_obj *Message) parse(c *Client) {
 		response_map["client_unknown_objects"] = client_unknown_objects
 
 	case "client_update_request":
-		s := []string{"client_update_request", action}
-		log.Println(strings.Join(s, " : "))
 
+		// prep response
+		response_map["action"] = "server_update_response"
+		var created_object_uuids []interface{}
+		var updated_objects []interface{}
+		
+		// parse objects
+		for k, v := range dat["objects"].([]interface{}) {
+			
+			log.Println(k)
+			log.Println(v.(map[string]interface{})["uuid"].(string))
+			
+			object := v.(map[string]interface{})
+			
+			// find from mongodb
+			c := session.DB("landline").C("SyncableObjects")
+			var result map[string]interface{}
+			err = c.Find(bson.M{"uuid": object["uuid"].(string)}).One(&result)
+			if err != nil {
+
+				// create object
+				object_map := make(map[string]interface{})
+				object_map["uuid"] = object["uuid"].(string)
+				object_map["key_value_pairs"] = object["key_value_pairs"].(string)
+				object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
+			
+				err = c.Insert(object_map)
+				if err != nil {
+					panic(err)
+				}
+				
+				// add to response
+				created_object_uuids = append(created_object_uuids, object["uuid"])
+
+			} else {
+			
+				// who has more recent object
+				if(result["time_modified_since_creation"].(float64) >= object["time_modified_since_creation"].(float64)) {
+					
+					// output more recent object if more recent
+					syncable_object_map := make(map[string]interface{})
+					syncable_object_map["uuid"] = result["uuid"]
+					syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
+					syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+	
+					updated_objects = append(updated_objects, syncable_object_map)
+					
+				} else {
+					
+					// update object
+					object_map := make(map[string]interface{})
+					object_map["key_value_pairs"] = object["key_value_pairs"].(string)
+					object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
+				
+					err = c.Update(bson.M{"uuid": result["uuid"]}, object_map)
+					if err != nil {
+						panic(err)
+					}
+				
+					// add to response
+					created_object_uuids = append(created_object_uuids, result["uuid"])
+				}
+			
+			}
+		}
+
+		response_map["created_object_uuids"] = created_object_uuids
+		response_map["updated_objects"] = updated_objects
 	}
 
 	// form json server response message
