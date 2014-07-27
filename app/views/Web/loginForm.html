@@ -1,14 +1,26 @@
 {{set . "title" "Login"}}
 {{template "header.html" .}}
 
-<form action="/login" method="POST" autocomplete="off">
-    <label for="username">Username</label><br/>
-    <input type="text" name="username" autocomplete="off" /><br/>
+<form role="form" class="form-horizontal" action="/login" method="POST" autocomplete="off">
+	<div class="form-group">
+    	<label class="control-label col-sm-2" for="username">Username</label>
+		<div class="col-sm-4">
+    		<input class="form-control" type="text" name="username" autocomplete="off" />
+		</div>
+	</div>
 	
-    <label for="password">Password</label><br/>
-    <input type="password" name="password" autocomplete="off" /><br/>
+    <div class="form-group">
+		<label class="control-label col-sm-2" for="password">Password</label>
+		<div class="col-sm-4">
+    		<input class="form-control" type="password" name="password" autocomplete="off" />
+		</div>
+	</div>
 	
-    <input type="submit" value="Login" />
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-default">Login</button>
+      </div>
+    </div>
 </form>
 
 
