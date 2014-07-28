@@ -23,8 +23,23 @@ type Web struct {
 	*revel.Controller
 }
 
+func (c Web) requireAuth() bool {
+	if(c.Session["username"] == "" || c.Session["kek"] == "") {
+		revel.TRACE.Println("User not authd")
+		return false
+	}
+	revel.TRACE.Println("User authd")
+	return true
+}
+
 func (c Web) WebSocketTest() revel.Result {
 	return c.Render()
+}
+
+func (c Web) Logout() revel.Result {
+	c.Session["username"] = ""
+	c.Session["kek"] = ""
+	return c.Redirect(Web.LoginForm)
 }
 
 func hashPassword(username, password string) string {
@@ -88,6 +103,10 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		revel.TRACE.Println(username)
 		revel.TRACE.Println(kek)
 		revel.TRACE.Println(priv)
+		
+		// save to session
+		c.Session["kek"] = kek;
+		c.Session["username"] = username;
 
 		// redirect
 		return c.Redirect(Web.WebSocketTest)
@@ -98,18 +117,35 @@ func (c Web) LoginAction(username, password string) revel.Result {
 }
 
 func (c Web) CreateUserForm() revel.Result {
+	if(!c.requireAuth()) {
+		return c.Redirect(Web.LoginForm)
+	}
 	return c.Render()
 }
 
 func (c Web) CreateUserAction(username, password, confirm_password string) revel.Result {
-
+	
+	if(!c.requireAuth()) {
+		return c.Redirect(Web.LoginForm)
+	}
+	
 	// hashed_password
 	hashed_password := hashPassword(username, password)
+
+	// TEMPORARY: get kek
+	var skek string
+	revel.TRACE.Println(c.Session["kek"])
+	if(c.Session["kek"] == "") {
+		revel.TRACE.Println("getting temp_transient_kek")
+		skek = temp_transient_kek
+	} else {
+		skek = c.Session["kek"];
+	}
 
 	// encrypt kek
 	ps := []string{password, username, salt}
 	key := []byte(string([]rune(strings.Join(ps, "-"))[0:32]))
-	pkek := []byte(temp_transient_kek)
+	pkek := []byte(skek)
 	encrypted_kek := hex.EncodeToString(encrypt(key, pkek))
 
 	// generate rsa keypair for user

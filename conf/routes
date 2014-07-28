@@ -9,6 +9,7 @@ POST    /users                                  Web.CreateUserAction
 
 GET     /login                                  Web.LoginForm
 POST    /login                                  Web.LoginAction
+GET     /logout                                 Web.Logout
 
 GET     /websocket_test                         Web.WebSocketTest
 
