@@ -1,19 +1,11 @@
 {{set . "title" "WebSocket Test"}}
 {{template "header.html" .}}
 
-
-
-<div class="form-group">
-	<label class="control-label" for="requestBody">Request</label>
-	<div class="controls">
-		<textarea id="requestBody" class="form-control" cols="140" rows="10">{
-   "action": "client_diff_request",
-   "object_uuids": {
-       "03481600-0478-11e4-9191-0800200c9a66": 0,
-       "13481600-0477-11e4-9191-0800200c9a66": 0
-   }
-}</textarea>
-	</div>
+<div class="form-group btn-group">
+  <button type="button" class="btn btn-default" id="client_get_users">client_get_users</button>
+  <button type="button" class="btn btn-default" id="client_get_schemas">client_get_schemas</button>
+  <button type="button" class="btn btn-default" id="client_diff_request">client_diff_request</button>
+  <button type="button" class="btn btn-default" id="client_update_request">client_update_request</button>
 </div>
 
 <div class="form-group">
@@ -23,9 +15,16 @@
 </div>
 
 <div class="form-group">
+	<label class="control-label" for="requestBody">Request</label>
+	<div class="controls">
+		<textarea id="requestBody" class="form-control" cols="140" rows="14"></textarea>
+	</div>
+</div>
+
+<div class="form-group">
 	<label class="control-label" for="responseBody">Response</label>
 	<div class="controls">
-		<textarea id="responseBody" class="form-control" cols="140" rows="30"></textarea>
+		<textarea id="responseBody" class="form-control" cols="140" rows="14"></textarea>
 	</div>
 </div>
 
@@ -42,6 +41,24 @@
   $('#send_btn').click(function(e) {
     var message = $('#requestBody').val();
     socket.send(message);
+  });
+
+  function populate_request(j) {
+	$('#requestBody').html(JSON.stringify(JSON.parse(j), null, 4));
+	$("#responseBody").html('');
+  }
+
+  $('#client_get_users').click(function(){
+	populate_request('{"action": "client_get_users"}');
+  });
+  $('#client_get_schemas').click(function(){
+	populate_request('{"action": "client_get_schemas"}');
+  });
+  $('#client_diff_request').click(function(){
+	populate_request('{"action": "client_diff_request","object_uuids": {"03481600-0478-11e4-9191-0800200c9a66": 0,"13481600-0477-11e4-9191-0800200c9a66": 0}}');
+  });
+  $('#client_update_request').click(function(){
+	populate_request('{"action": "client_update_request","objects": [{"uuid": "XXXXXX","key_value_pairs": "XXXXXX","time_modified_since_creation": 0},{"uuid": "XXXXXX","key_value_pairs": "XXXXXX","time_modified_since_creation": 0}]}');
   });
 </script>
 
