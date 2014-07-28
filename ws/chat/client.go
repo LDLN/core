@@ -71,7 +71,9 @@ func (c *Client) listenWrite() {
 		// send message to the client
 		case msg := <-c.ch:
 			log.Println("Send:", msg)
-			websocket.JSON.Send(c.ws, msg)
+			
+			// form json server response message
+			websocket.JSON.Send(c.ws, msg.body)
 
 		// receive done request
 		case <-c.doneCh:
@@ -97,10 +99,13 @@ func (c *Client) listenRead() {
 		// read data from websocket connection
 		default:
 			var msg Message
-			err := websocket.JSON.Receive(c.ws, &msg)
+			var v map[string]interface{}
+			err := websocket.JSON.Receive(c.ws, &v)
+			msg.body = v
 			if err == io.EOF {
 				c.doneCh <- true
 			} else if err != nil {
+				log.Println(err)
 				c.server.Err(err)
 			} else {
 				msg.parse(c)

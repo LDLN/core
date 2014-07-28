@@ -23,6 +23,10 @@ type Web struct {
 	*revel.Controller
 }
 
+func (c Web) WebSocketTest() revel.Result {
+	return c.Render()
+}
+
 func hashPassword(username, password string) string {
 
 	ps := []string{password, username, salt}
@@ -86,7 +90,7 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		revel.TRACE.Println(priv)
 
 		// redirect
-		return c.Redirect(App.Chatroom)
+		return c.Redirect(Web.WebSocketTest)
 	}
 
 	// redirect

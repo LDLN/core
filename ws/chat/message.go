@@ -1,29 +1,28 @@
 package chat
 
 import (
-	"encoding/json"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
 )
 
 type Message struct {
-	Author string `json:"author"`
-	Body   string `json:"body"`
+	body   map[string]interface{}
 }
 
-func (self *Message) String() string {
-	return self.Author + " says " + self.Body
+func (self *Message) String() map[string]interface{} {
+	return self.body
 }
 
 func (msg_obj *Message) parse(c *Client) {
 
 	// unmarshal the json
-	byt := []byte((msg_obj.Body))
-	var dat map[string]interface{}
-	if err := json.Unmarshal(byt, &dat); err != nil {
-		panic(err)
-	}
+	//byt := []byte((msg_obj.Body))
+	//var dat map[string]interface{}
+	//if err := json.Unmarshal(byt, &dat); err != nil {
+	//	panic(err)
+	//}
+	dat := msg_obj.body
 
 	// init response
 	response_map := make(map[string]interface{})
@@ -278,15 +277,7 @@ func (msg_obj *Message) parse(c *Client) {
 		response_map["updated_objects"] = updated_objects
 	}
 
-	// form json server response message
-	response_json_map, err := json.Marshal(response_map)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(string(response_json_map[:]))
-	log.Println(response_json_map)
-
-	c.Write(&Message{"server", string(response_json_map[:])})
+	c.Write(&Message{response_map})
 
 	// send server response message
 	//return string(response_json_map[:])

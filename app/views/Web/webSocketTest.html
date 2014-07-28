@@ -1,0 +1,51 @@
+{{set . "title" "WebSocket Test"}}
+{{template "header.html" .}}
+
+<form class="well form-horizontal">
+
+	<div class="control-group">
+		<label class="control-label" for="requestBody">Request:</label>
+		<div class="controls">
+			<textarea id="requestBody" class="form-control" cols="140" rows="15">{
+    "action": "client_diff_request",
+    "object_uuids": {
+        "03481600-0478-11e4-9191-0800200c9a66": 0,
+        "13481600-0477-11e4-9191-0800200c9a66": 0
+    }
+}</textarea>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label" for="responseBody">Response:</label>
+		<div class="controls">
+			<textarea id="responseBody" class="form-control" cols="140" rows="15"></textarea>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<div class="controls">
+			<a id="send_btn" class="btn btn-primary">Send</a>
+		</div>
+	</div>
+</form>
+
+
+<script type="text/javascript">
+
+  // Create a socket
+  var socket = new WebSocket('ws://localhost:8080/ws')
+
+  // Message received on the socket
+  socket.onmessage = function(event) {
+	$("#responseBody").val(event.data);
+  }
+
+  $('#send_btn').click(function(e) {
+    var message = $('#requestBody').val();
+    socket.send(message);
+  });
+</script>
+
+
+{{template "footer.html" .}}
