@@ -4,8 +4,13 @@
 
 module:testrunner
 
-GET     /                                       App.Index
-WS      /ws                                     App.RoomSocket
+GET     /users                                  Web.CreateUserForm
+POST    /users                                  Web.CreateUserAction
+
+GET     /login                                  Web.LoginForm
+POST    /login                                  Web.LoginAction
+
+GET     /websocket_test                         Web.WebSocketTest
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
