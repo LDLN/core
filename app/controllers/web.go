@@ -39,6 +39,7 @@ func (c Web) WebSocketTest() revel.Result {
 func (c Web) Logout() revel.Result {
 	c.Session["username"] = ""
 	c.Session["kek"] = ""
+	c.Flash.Success("You have logged out successfully")
 	return c.Redirect(Web.LoginForm)
 }
 
