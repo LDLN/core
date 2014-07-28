@@ -113,6 +113,7 @@ func (c Web) LoginAction(username, password string) revel.Result {
 	}
 
 	// redirect
+	c.Flash.Error("Username and password not found")
 	return c.Redirect(Web.LoginForm)
 }
 
@@ -188,6 +189,7 @@ func (c Web) CreateUserAction(username, password, confirm_password string) revel
 	}
 
 	// redirect
+	c.Flash.Success("User created")
 	return c.Redirect(Web.CreateUserForm)
 }
 
