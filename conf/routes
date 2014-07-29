@@ -9,8 +9,13 @@ POST    /users                                  Web.CreateUserAction
 
 GET     /login                                  Web.LoginForm
 POST    /login                                  Web.LoginAction
+GET     /logout                                 Web.Logout
 
 GET     /websocket_test                         Web.WebSocketTest
+
+GET     /types                                  SyncableObjects.ListDataTypes
+GET     /types/:object_key/create               SyncableObjects.CreateObjectForm
+POST    /types/:object_key/create               SyncableObjects.CreateObjectAction
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

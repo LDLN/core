@@ -41,15 +41,17 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-right">
             <li class="inactive"><a href="#">Sync History</a></li>
-            <li><a href="#">Households</a></li>
+            <li><a href="/types">Object Types</a></li>
             <li><a href="#">Map</a></li>
-            <li><a href="#">News</a></li>
           </ul>
           <ul class="nav navbar-right">
             <li><a href="/users">Create User</a></li>
           </ul>
           <ul class="nav navbar-right">
-            <li><a href="/login">Logout</a></li>
+            <li><a href="/websocket_test">WebSocket Test</a></li>
+          </ul>
+          <ul class="nav navbar-right">
+            <li><a href="/logout">Logout</a></li>
           </ul>
         </div>
       </div>
@@ -67,16 +69,20 @@
 		  </div>
           <ul class="nav nav-sidebar">
             <li class="inactive"><a href="#">Sync History</a></li>
-            <li><a href="#">Households</a></li>
+            <li><a href="/types">Object Types</a></li>
             <li><a href="#">Map</a></li>
-            <li><a href="#">News</a></li>
           </ul>
           <ul class="nav nav-sidebar">
             <li><a href="/users">Create User</a></li>
           </ul>
           <ul class="nav nav-sidebar">
-            <li><a href="/login">Logout</a></li>
+            <li><a href="/websocket_test">WebSocket Test</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a href="/logout">Logout</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+		  {{if .flash.success}}<div class="alert alert-success" role="alert">{{.flash.success}}</div>{{end}}
+		  {{if .flash.error}}<div class="alert alert-danger" role="alert">{{.flash.error}}</div>{{end}}
           <h1 class="page-header">{{.title}}</h1>

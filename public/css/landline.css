@@ -35,8 +35,15 @@ body {
   border-bottom: 1px solid #eee;
 }
 a {
-  color: #fff;
   text-decoration: none;
+}
+.navbar a,
+.sidebar a {
+  color: #fff;
+}
+.navbar a:hover,
+.sidebar a:hover {
+  color: #009186;
 }
 h1 {
   font-size: 2em;
