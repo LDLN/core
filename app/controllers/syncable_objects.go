@@ -54,3 +54,15 @@ func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {
 		
 	return c.Render()
 }
+
+
+
+
+
+
+
+
+
+
+
+
