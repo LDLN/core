@@ -1,0 +1,21 @@
+{{set . "title" "Object Types"}}
+{{template "header.html" .}}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Type</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{range $index, $element := .results}}
+		<tr>
+			<td><a href="/types/{{$element.object_key}}">{{$element.object_label}}</a></td>
+			<td><a href="/types/{{$element.object_key}}/create">Create</a></td>
+		</tr>
+		{{end}}
+	</tbody>
+</table>
+
+{{template "footer.html" .}}

@@ -13,6 +13,8 @@ GET     /logout                                 Web.Logout
 
 GET     /websocket_test                         Web.WebSocketTest
 
+GET     /types                                  SyncableObjects.ListDataTypes
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
