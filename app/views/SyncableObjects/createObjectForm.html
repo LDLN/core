@@ -1,11 +1,11 @@
 {{set . "title" .result.object_label}}
 {{template "header.html" .}}
 
-<form role="form" class="form-horizontal" action="/users" method="POST" autocomplete="off">
+<form role="form" class="form-horizontal" action="/types/{{.result.object_key}}/create" method="POST" autocomplete="off">
 	
 	{{range $index, $element := .result.schema}}
 	<div class="form-group">
-    		<label class="control-label col-sm-2" for="{{$element.label}}">{{$element.label}}</label>
+    	<label class="control-label col-sm-2" for="{{$element.label}}">{{$element.label}}</label>
 		<div class="col-sm-4">
 		{{if eq $element.type "text"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">

@@ -16,6 +16,7 @@ GET     /websocket_test                         Web.WebSocketTest
 GET     /types                                  SyncableObjects.ListDataTypes
 GET     /types/:object_key/create               SyncableObjects.CreateObjectForm
 POST    /types/:object_key/create               SyncableObjects.CreateObjectAction
+GET     /types/:object_key/:uuid                SyncableObjects.ViewObject
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

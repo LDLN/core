@@ -168,6 +168,7 @@ func (msg_obj *Message) parse(c *Client) {
 					// server has updated more recently than client - put in modified_objects array
 					syncable_object_map := make(map[string]interface{})
 					syncable_object_map["uuid"] = result["uuid"]
+					syncable_object_map["object_type"] = result["object_type"]
 					syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
 					syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
 
@@ -194,6 +195,7 @@ func (msg_obj *Message) parse(c *Client) {
 				// object that the client does not know about
 				syncable_object_map := make(map[string]interface{})
 				syncable_object_map["uuid"] = result["uuid"]
+				syncable_object_map["object_type"] = result["object_type"]
 				syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
 				syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
 
@@ -230,6 +232,7 @@ func (msg_obj *Message) parse(c *Client) {
 				// create object
 				object_map := make(map[string]interface{})
 				object_map["uuid"] = object["uuid"].(string)
+				object_map["object_type"] = object["object_type"].(string)
 				object_map["key_value_pairs"] = object["key_value_pairs"].(string)
 				object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
 			
@@ -249,6 +252,7 @@ func (msg_obj *Message) parse(c *Client) {
 					// output more recent object if more recent
 					syncable_object_map := make(map[string]interface{})
 					syncable_object_map["uuid"] = result["uuid"]
+					syncable_object_map["object_type"] = result["object_type"]
 					syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
 					syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
 	
@@ -258,6 +262,7 @@ func (msg_obj *Message) parse(c *Client) {
 					
 					// update object
 					object_map := make(map[string]interface{})
+					object_map["object_type"] = object["object_type"].(string)
 					object_map["key_value_pairs"] = object["key_value_pairs"].(string)
 					object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
 				
