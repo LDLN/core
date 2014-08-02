@@ -4,6 +4,9 @@
 
 module:testrunner
 
+GET     /setup                                  Web.FirstTimeSetupForm
+POST    /setup                                  Web.FirstTimeSetupAction
+
 GET     /users                                  Web.CreateUserForm
 POST    /users                                  Web.CreateUserAction
 
