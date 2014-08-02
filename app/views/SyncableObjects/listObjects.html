@@ -1,0 +1,21 @@
+{{set . "title" .object_key}}
+{{template "header.html" .}}
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Object</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+	{{range $index, $element := .results}}
+		<tr>
+			<td><a href="/types/{{$element.object_type}}/{{$element.uuid}}">{{$element.uuid}}</a></td>
+			<td></td>
+		</tr>
+	{{end}}
+	</tbody>
+</table>
+	
+{{template "footer.html" .}}

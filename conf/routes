@@ -17,6 +17,7 @@ GET     /types                                  SyncableObjects.ListDataTypes
 GET     /types/:object_key/create               SyncableObjects.CreateObjectForm
 POST    /types/:object_key/create               SyncableObjects.CreateObjectAction
 GET     /types/:object_key/:uuid                SyncableObjects.ViewObject
+GET     /types/:object_key                      SyncableObjects.ListObjects
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

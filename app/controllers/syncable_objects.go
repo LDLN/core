@@ -116,7 +116,7 @@ func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {
 	return c.Redirect(routes.SyncableObjects.CreateObjectForm(object_key))
 }
 
-func (c SyncableObjects) ViewObject(uuid string) revel.Result {
+func (c SyncableObjects) ViewObject(object_key, uuid string) revel.Result {
 	
 	// connect to mongodb
 	session, err := mgo.Dial("localhost")
@@ -128,7 +128,7 @@ func (c SyncableObjects) ViewObject(uuid string) revel.Result {
 	// query
 	dbc := session.DB("landline").C("SyncableObjects")
 	var result map[string]string
-	err = dbc.Find(bson.M{"uuid": uuid}).One(&result)
+	err = dbc.Find(bson.M{"uuid": uuid, "object_type": object_key}).One(&result)
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
@@ -150,6 +150,42 @@ func (c SyncableObjects) ViewObject(uuid string) revel.Result {
 	}
 		
 	return c.Render(result, key_values)
+}
+
+func (c SyncableObjects) ListObjects(object_key string) revel.Result {
+	
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	
+	// query
+	dbc := session.DB("landline").C("SyncableObjects")
+	var results []map[string]interface{}
+	err = dbc.Find(bson.M{"object_type": object_key}).All(&results)
+	if err != nil {
+		revel.TRACE.Println(err)
+	}
+	revel.TRACE.Println(results)
+	
+	//// decrypt key_value_pairs
+	//kv_hex, err := hex.DecodeString(result["key_value_pairs"])
+	//if err != nil {
+	//	revel.TRACE.Println(err)
+	//}
+	//kv_plain := string(decrypt([]byte(c.Session["kek"]), kv_hex))
+	//revel.TRACE.Println(kv_plain)
+	
+	//// convert string of json to json to map
+	//byt := []byte((kv_plain))
+	//var key_values map[string]interface{}
+	//if err := json.Unmarshal(byt, &key_values); err != nil {
+	//	panic(err)
+	//}
+		
+	return c.Render(object_key, results)
 }
 
 
