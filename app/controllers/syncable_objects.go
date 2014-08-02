@@ -78,16 +78,23 @@ func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {
 	revel.TRACE.Println(key_values_string)
 	
 	// encrypt json string
-	key_values_string_encrypted := encrypt([]byte(c.Session["kek"]), key_values_map)
-	revel.TRACE.Println(key_values_string_encrypted)
-	revel.TRACE.Println(string(decrypt([]byte(c.Session["kek"]), key_values_string_encrypted)))
+	kv_string_encrypted := hex.EncodeToString(encrypt([]byte(c.Session["kek"]), key_values_map))
+	revel.TRACE.Println(kv_string_encrypted)
+	
+	// test decrypt
+	kv_hex, err := hex.DecodeString(kv_string_encrypted)
+	if err != nil {
+		revel.TRACE.Println(err)
+	}
+	kv_plain := string(decrypt([]byte(c.Session["kek"]), kv_hex))
+	revel.TRACE.Println(kv_plain)
 	
 	// create object
 	object_map := make(map[string]interface{})
 	uuid, err := uuid.NewV4()
 	object_map["uuid"] = uuid.String()
 	object_map["object_type"] = object_key
-	object_map["key_value_pairs"] = hex.EncodeToString(key_values_string_encrypted)
+	object_map["key_value_pairs"] = kv_string_encrypted
 	object_map["time_modified_since_creation"] = float64(0)
 
 	// connect to mongodb
@@ -128,17 +135,15 @@ func (c SyncableObjects) ViewObject(uuid string) revel.Result {
 	revel.TRACE.Println(result)
 	
 	// decrypt key_value_pairs
-	key := []byte(c.Session["kek"])
-	todec, err := hex.DecodeString(result["key_value_pairs"])
+	kv_hex, err := hex.DecodeString(result["key_value_pairs"])
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
-	revel.TRACE.Println(c.Session["kek"])
-	revel.TRACE.Println(todec)
-	key_values_string := string(decrypt(key, todec))
+	kv_plain := string(decrypt([]byte(c.Session["kek"]), kv_hex))
+	revel.TRACE.Println(kv_plain)
 	
 	// convert string of json to json to map
-	byt := []byte((key_values_string))
+	byt := []byte((kv_plain))
 	var key_values map[string]interface{}
 	if err := json.Unmarshal(byt, &key_values); err != nil {
 		panic(err)
