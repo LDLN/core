@@ -262,6 +262,7 @@ func (msg_obj *Message) parse(c *Client) {
 					
 					// update object
 					object_map := make(map[string]interface{})
+					object_map["uuid"] = object["uuid"].(string)
 					object_map["object_type"] = object["object_type"].(string)
 					object_map["key_value_pairs"] = object["key_value_pairs"].(string)
 					object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
