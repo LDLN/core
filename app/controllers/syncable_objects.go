@@ -113,7 +113,7 @@ func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {
 	
 	// redirect
 	c.Flash.Success("Object created")
-	return c.Redirect(routes.SyncableObjects.CreateObjectForm(object_key))
+	return c.Redirect(routes.SyncableObjects.ViewObject(object_key, object_map["uuid"].(string)))
 }
 
 func (c SyncableObjects) ViewObject(object_key, uuid string) revel.Result {

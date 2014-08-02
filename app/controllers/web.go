@@ -17,10 +17,60 @@ import (
 )
 
 const salt = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
-const temp_transient_kek = "ckxUIcinOui2w7wNARGz7bIrTX67rTYh"
 
 type Web struct {
 	*revel.Controller
+}
+
+func (c Web) checkIfSetupIsEligible() bool {
+
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	// find any users
+	dbu := session.DB("landline").C("Users")
+	var result map[string]string
+	err = dbu.Find(bson.M{}).One(&result)
+	
+	// cannot do setup if users exist
+	if err != nil {
+		return true
+	} else {
+		c.Flash.Error("Basestation is already setup")
+		return false
+	}
+}
+
+func (c Web) FirstTimeSetupForm() revel.Result {
+
+	if(!c.checkIfSetupIsEligible()) {
+		return c.Redirect(Web.LoginForm)
+	}
+	
+	return c.Render()
+}
+
+func (c Web) FirstTimeSetupAction(username, password, confirm_password string) revel.Result {
+
+	if(!c.checkIfSetupIsEligible()) {
+		return c.Redirect(Web.LoginForm)
+	}
+	
+	// create new key for organization
+	skek := randString(32)
+	
+	// create first user account
+	if(createUser(username, password, skek)) {
+		c.Flash.Success("User created")
+	} else {
+		c.Flash.Error("Error generating user")
+	}
+	
+	return c.Redirect(Web.LoginForm)
 }
 
 func (c Web) requireAuth() bool {
@@ -130,19 +180,31 @@ func (c Web) CreateUserAction(username, password, confirm_password string) revel
 	if(!c.requireAuth()) {
 		return c.Redirect(Web.LoginForm)
 	}
-	
-	// hashed_password
-	hashed_password := hashPassword(username, password)
 
-	// TEMPORARY: get kek
+	// get kek
 	var skek string
-	revel.TRACE.Println(c.Session["kek"])
 	if(c.Session["kek"] == "") {
-		revel.TRACE.Println("getting temp_transient_kek")
-		skek = temp_transient_kek
+		c.Flash.Error("Error generating user")
+		return c.Redirect(Web.CreateUserForm)
 	} else {
 		skek = c.Session["kek"];
 	}
+	
+	// create user
+	if(createUser(username, password, skek)) {
+		c.Flash.Success("User created")
+	} else {
+		c.Flash.Error("Error generating user")
+	}
+
+	// redirect
+	return c.Redirect(Web.CreateUserForm)
+}
+
+func createUser(username, password, skek string) bool {
+	
+	// hashed_password
+	hashed_password := hashPassword(username, password)
 
 	// encrypt kek
 	ps := []string{password, username, salt}
@@ -188,16 +250,24 @@ func (c Web) CreateUserAction(username, password, confirm_password string) revel
 	if err != nil {
 		panic(err)
 	}
-
-	// redirect
-	c.Flash.Success("User created")
-	return c.Redirect(Web.CreateUserForm)
+	
+	return true;
 }
 
 // from: https://stackoverflow.com/questions/18817336/golang-encrypting-a-string-with-aes-and-base64
 
 // See recommended IV creation from ciphertext below
 //var iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
+
+func randString(n int) string {
+    const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    var bytes = make([]byte, n)
+    rand.Read(bytes)
+    for i, b := range bytes {
+        bytes[i] = alphanum[b % byte(len(alphanum))]
+    }
+    return string(bytes)
+}
 
 func encodeBase64(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
