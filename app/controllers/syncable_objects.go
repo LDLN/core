@@ -14,6 +14,23 @@ type SyncableObjects struct {
 	*revel.Controller
 }
 
+func (c SyncableObjects) Map() revel.Result {
+
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	// find any deployments
+	dbd := session.DB("landline").C("Deployments")
+	var deployment map[string]string
+	err = dbd.Find(bson.M{}).One(&deployment)
+	
+	return c.Render(deployment)
+}
+
 func (c SyncableObjects) ListDataTypes() revel.Result {
 	
 	// connect to mongodb

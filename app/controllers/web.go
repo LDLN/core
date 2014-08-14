@@ -14,6 +14,7 @@ import (
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"strings"
+	"github.com/nu7hatch/gouuid"
 )
 
 const salt = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
@@ -31,10 +32,15 @@ func (c Web) checkIfSetupIsEligible() bool {
 	}
 	defer session.Close()
 
+	// find any deployments
+	dbd := session.DB("landline").C("Deployments")
+	var resultd map[string]string
+	err = dbd.Find(bson.M{}).One(&resultd)
+
 	// find any users
 	dbu := session.DB("landline").C("Users")
-	var result map[string]string
-	err = dbu.Find(bson.M{}).One(&result)
+	var resultu map[string]string
+	err = dbu.Find(bson.M{}).One(&resultu)
 	
 	// cannot do setup if users exist
 	if err != nil {
@@ -54,23 +60,62 @@ func (c Web) FirstTimeSetupForm() revel.Result {
 	return c.Render()
 }
 
-func (c Web) FirstTimeSetupAction(username, password, confirm_password string) revel.Result {
+func (c Web) FirstTimeSetupAction(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max, username, password, confirm_password string) revel.Result {
 
 	if(!c.checkIfSetupIsEligible()) {
 		return c.Redirect(Web.LoginForm)
 	}
 	
-	// create new key for organization
-	skek := randString(32)
-	
-	// create first user account
-	if(createUser(username, password, skek)) {
-		c.Flash.Success("User created")
+	// create deployment
+	if(createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max)) {
+		
+		// create new key for organization
+		skek := randString(32)
+		
+		// create first user account
+		if(createUser(username, password, skek)) {
+			c.Flash.Success("Organization and user created")
+		} else {
+			c.Flash.Error("Error generating user")
+		}
+		
 	} else {
-		c.Flash.Error("Error generating user")
+		c.Flash.Error("Error creating organization")
 	}
 	
 	return c.Redirect(Web.LoginForm)
+}
+
+func createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max string) bool {
+	
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	// save user object
+	dbu := session.DB("landline").C("Deployments")
+
+	// create object
+	deployment_object_map := make(map[string]string)
+	uuid, err := uuid.NewV4()
+	deployment_object_map["uuid"] = uuid.String()
+	deployment_object_map["name"] = org_title
+	deployment_object_map["unit"] = org_subtitle
+	deployment_object_map["map_center_lat"] = org_map_center_lat
+	deployment_object_map["map_center_lon"] = org_map_center_lon
+	deployment_object_map["map_zoom_min"] = org_map_zoom_min
+	deployment_object_map["map_zoom_max"] = org_map_zoom_max
+	deployment_object_map["map_mbtiles"] = org_mbtiles_file
+
+	err = dbu.Insert(deployment_object_map)
+	if err != nil {
+		panic(err)
+	}
+	
+	return true;
 }
 
 func (c Web) requireAuth() bool {
@@ -107,6 +152,11 @@ func hashPassword(username, password string) string {
 }
 
 func (c Web) LoginForm() revel.Result {
+	
+	if(c.checkIfSetupIsEligible()) {
+		return c.Redirect(Web.FirstTimeSetupForm)
+	}
+	
 	return c.Render()
 }
 

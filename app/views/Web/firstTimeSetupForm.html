@@ -1,21 +1,21 @@
 {{set . "title" "Setup"}}
 {{template "header.html" .}}
 
-<form role="form" class="form-horizontal" action="/setup" method="POST" autocomplete="off">
+<form role="form" class="form-horizontal" action="/setup" method="POST">
 
 	<h2>Create Organization</h2>
 
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="org_title">Organization Name</label>
 		<div class="col-sm-4">
-    		<input class="form-control" type="text" name="org_title" autocomplete="off" placeholder="" />
+    		<input class="form-control" type="text" name="org_title" placeholder="" />
 		</div>
 	</div>
 
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="org_subtitle">Sub Unit</label>
 		<div class="col-sm-4">
-    		<input class="form-control" type="text" name="org_subtitle" autocomplete="off" placeholder="i.e. Office of Emergency Management" />
+    		<input class="form-control" type="text" name="org_subtitle" placeholder="i.e. Office of Emergency Management" />
 		</div>
 	</div>
 	
@@ -26,7 +26,7 @@
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="username">Username</label>
 		<div class="col-sm-4">
-    		<input class="form-control" type="text" name="username" autocomplete="off" />
+    		<input class="form-control" type="text" name="username" />
 		</div>
 	</div>
 	
@@ -52,8 +52,40 @@
     	<label class="control-label col-sm-2" for="org_mbtiles_file">MB Tiles Filename</label>
 		<div class="col-sm-4">
 			<div class="input-group">
-    			<input class="form-control" type="text" name="org_mbtiles_file" autocomplete="off" />
+    			<input class="form-control" type="text" name="org_mbtiles_file" />
 				<span class="input-group-addon">.mbtiles</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group">
+    	<label class="control-label col-sm-2" for="org_map_center">Map Center</label>
+    	<label class="control-label col-sm-1" for="org_map_center_lat">Latitude</label>
+		<div class="col-sm-1">
+			<div class="input-group">
+    			<input class="form-control" type="text" name="org_map_center_lat" />
+			</div>
+		</div>
+    	<label class="control-label col-sm-1" for="org_map_center_lon">Longitude</label>
+		<div class="col-sm-1">
+			<div class="input-group">
+    			<input class="form-control" type="text" name="org_map_center_lon" />
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group">
+    	<label class="control-label col-sm-2" for="org_map_zoom">Zoom Range</label>
+    	<label class="control-label col-sm-1" for="org_map_zoom_min">Min</label>
+		<div class="col-sm-1">
+			<div class="input-group">
+    			<input class="form-control" type="number" name="org_map_zoom_min" value="13" />
+			</div>
+		</div>
+    	<label class="control-label col-sm-1" for="org_map_zoom_max">Max</label>
+		<div class="col-sm-1">
+			<div class="input-group">
+    			<input class="form-control" type="number" name="org_map_zoom_max" value="17" />
 			</div>
 		</div>
 	</div>

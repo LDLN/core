@@ -1,0 +1,62 @@
+{{set . "title" "Map"}}
+{{template "header.html" .}}
+
+<style>
+body, 
+html,
+.container-fluid,
+.container-fluid .row,
+.container-fluid .row .main {
+	height: 100%;
+}
+.container-fluid .row,
+.container-fluid .row .main {
+	width:110%;
+}
+#map2 {
+	position:relative; 
+	left:-20px;
+	width:100%; 
+	height:100%;
+}
+@media (min-width: 768px) {
+	.container-fluid .row,
+	.container-fluid .row .main {
+		width:100%;
+	}
+	#map2 {
+		position:relative; 
+		left:-40px;
+	}
+}
+</style>
+
+<div id="map2"></div>
+
+
+<link rel="stylesheet" href="/public/css/leaflet.css" />
+<script src="/public/js/leaflet.js"></script>
+
+<script>
+	var markers = {'init': 'init'};
+	
+	function getMapPins()
+	{
+		
+	}
+	
+	
+	var map = L.map('map2').setView([{{.deployment.map_center_lat}}, {{.deployment.map_center_lon}}], {{.deployment.map_zoom_min}});
+	
+	L.tileLayer('http://localhost:8888/v2/{{.deployment.map_mbtiles}}/{z}/{x}/{y}.png', {
+    	attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Hosted by <a href="http://ldln.co">LDLN</a>',
+    	maxZoom: {{.deployment.map_zoom_max}}
+	}).addTo(map);
+	
+	getMapPins();
+	setInterval(getMapPins, 10000);
+	
+	
+</script>
+
+{{template "footer.html" .}}

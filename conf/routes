@@ -22,6 +22,8 @@ POST    /types/:object_key/create               SyncableObjects.CreateObjectActi
 GET     /types/:object_key/:uuid                SyncableObjects.ViewObject
 GET     /types/:object_key                      SyncableObjects.ListObjects
 
+GET		/map									SyncableObjects.Map
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
