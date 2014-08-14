@@ -36,10 +36,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img src="/public/img/logo.png" alt="LDLN" />City of Seattle</a>
+          <a class="navbar-brand" href="#"><img src="/public/img/logo.png" alt="LDLN" />{{if .session.deployment_name}}{{.session.deployment_name}}{{else}}LDLN Base Station{{end}}</a>
         </div>
         <div class="navbar-collapse collapse">
-          <ul class="nav navbar-right">
+          {{if .session.username}}
+		  <ul class="nav navbar-right">
             <li class="inactive"><a href="#">Sync History</a></li>
             <li><a href="/types">Object Types</a></li>
             <li><a href="/map">Map</a></li>
@@ -53,6 +54,11 @@
           <ul class="nav navbar-right">
             <li><a href="/logout">Logout</a></li>
           </ul>
+		  {{else}}
+          <ul class="nav navbar-right">
+            <li><a href="/login">Login</a></li>
+          </ul>
+		  {{end}}
         </div>
       </div>
     </div>
@@ -63,10 +69,11 @@
 		  <img src="/public/img/logo.png" alt="LDLN" />
 		  <div id="org_details">
 	        <p>
-	          <span id="uname">City of Seattle</span><br />
-	          <span id="utitle">Office of Emergency Management</span>
+	          <span id="uname">{{if .session.deployment_name}}{{.session.deployment_name}}{{else}}LDLN Base Station{{end}}</span>
+			  {{if .session.deployment_unit}}<br /><span id="utitle">{{.session.deployment_unit}}</span>{{end}}
 	        </p>
 		  </div>
+		  {{if .session.username}}
           <ul class="nav nav-sidebar">
             <li class="inactive"><a href="#">Sync History</a></li>
             <li><a href="/types">Object Types</a></li>
@@ -81,6 +88,11 @@
           <ul class="nav nav-sidebar">
             <li><a href="/logout">Logout</a></li>
           </ul>
+		  {{else}}
+          <ul class="nav nav-sidebar">
+            <li><a href="/login">Login</a></li>
+          </ul>
+		  {{end}}
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 		  {{if .flash.success}}<div class="alert alert-success" role="alert">{{.flash.success}}</div>{{end}}

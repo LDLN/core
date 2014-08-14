@@ -23,7 +23,7 @@ type Web struct {
 	*revel.Controller
 }
 
-func (c Web) checkIfSetupIsEligible() bool {
+func checkIfSetupIsEligible() bool {
 
 	// connect to mongodb
 	session, err := mgo.Dial("localhost")
@@ -46,14 +46,14 @@ func (c Web) checkIfSetupIsEligible() bool {
 	if err != nil {
 		return true
 	} else {
-		c.Flash.Error("Basestation is already setup")
 		return false
 	}
 }
 
 func (c Web) FirstTimeSetupForm() revel.Result {
 
-	if(!c.checkIfSetupIsEligible()) {
+	if(!checkIfSetupIsEligible()) {
+		c.Flash.Error("Basestation is already setup")
 		return c.Redirect(Web.LoginForm)
 	}
 	
@@ -62,7 +62,8 @@ func (c Web) FirstTimeSetupForm() revel.Result {
 
 func (c Web) FirstTimeSetupAction(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max, username, password, confirm_password string) revel.Result {
 
-	if(!c.checkIfSetupIsEligible()) {
+	if(!checkIfSetupIsEligible()) {
+		c.Flash.Error("Basestation is already setup")
 		return c.Redirect(Web.LoginForm)
 	}
 	
@@ -153,7 +154,7 @@ func hashPassword(username, password string) string {
 
 func (c Web) LoginForm() revel.Result {
 	
-	if(c.checkIfSetupIsEligible()) {
+	if(checkIfSetupIsEligible()) {
 		return c.Redirect(Web.FirstTimeSetupForm)
 	}
 	
@@ -205,9 +206,16 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		revel.TRACE.Println(kek)
 		revel.TRACE.Println(priv)
 		
+		// get deployment
+		dbd := session.DB("landline").C("Deployments")
+		var resultd map[string]string
+		err = dbd.Find(bson.M{}).One(&resultd)
+		
 		// save to session
 		c.Session["kek"] = kek;
 		c.Session["username"] = username;
+		c.Session["deployment_name"] = resultd["name"];
+		c.Session["deployment_unit"] = resultd["unit"];
 
 		// redirect
 		return c.Redirect(Web.WebSocketTest)
