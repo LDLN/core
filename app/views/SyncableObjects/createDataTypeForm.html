@@ -1,0 +1,62 @@
+{{set . "title" "Create Object Type"}}
+{{template "header.html" .}}
+
+<form role="form" class="form-horizontal" action="/types/create" method="POST" autocomplete="off">
+	
+	<div class="form-group">
+    		<label class="control-label col-sm-2" for="object_label">Object Name</label>
+		<div class="col-sm-4">
+			<input class="form-control" type="text" name="object_label" id="object_label">
+		</div>
+	</div>
+	
+	<div class="form-group">
+    		<label class="control-label col-sm-2" for="weight">Weight</label>
+		<div class="col-sm-2">
+			<input class="form-control" type="number" name="weight" id="weight">
+		</div>
+	</div>
+	
+	<div class="form-group">
+    		<label class="control-label col-sm-2" for="">Form Elements</label>
+		<div class="col-sm-6">
+	    		<table class="table">
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Label</th>
+						<th>Weight</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<select>
+								<option value="text">Text</option>
+								<option value="longtext">Long Text</option>
+								<option value="datetime">Date and Time</option>
+								<option value="image">Image</option>
+								<option value="option">Options</option>
+							</select>
+						</td>
+						<td>
+							<input class="form-control" type="text" name="object_label" id="object_label">
+						</td>
+						<td>
+							<input class="form-control" type="number" name="weight" id="weight">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-default">Submit</button>
+      </div>
+    </div>
+	
+</form>
+
+{{template "footer.html" .}}

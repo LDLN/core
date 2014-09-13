@@ -16,6 +16,9 @@ GET     /logout                                 Web.Logout
 
 GET     /websocket_test                         Web.WebSocketTest
 
+GET     /types/create                           SyncableObjects.CreateDataTypeForm
+POST    /types/create                           SyncableObjects.CreateDataTypeAction
+
 GET     /types                                  SyncableObjects.ListDataTypes
 GET     /types/:object_key/create               SyncableObjects.CreateObjectForm
 POST    /types/:object_key/create               SyncableObjects.CreateObjectAction

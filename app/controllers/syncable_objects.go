@@ -51,6 +51,14 @@ func (c SyncableObjects) ListDataTypes() revel.Result {
 	return c.Render(results)
 }
 
+func (c SyncableObjects) CreateDataTypeForm() revel.Result {
+	return c.Render()
+}
+
+func (c SyncableObjects) CreateDataTypeAction() revel.Result {
+	return c.Render()
+}
+
 func (c SyncableObjects) CreateObjectForm(object_key string) revel.Result {
 	
 	// connect to mongodb
