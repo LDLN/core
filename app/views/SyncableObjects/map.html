@@ -33,17 +33,91 @@ html,
 
 <div id="map2"></div>
 
+<div class="form-group">
+	<div class="controls">
+		<textarea id="requestDebug" class="form-control" cols="140" rows="8"></textarea>
+	</div>
+</div>
+
+<div class="form-group">
+	<div class="controls">
+		<textarea id="responseDebug" class="form-control" cols="140" rows="70"></textarea>
+	</div>
+</div>
+
 
 <link rel="stylesheet" href="/public/css/leaflet.css" />
 <script src="/public/js/leaflet.js"></script>
 
 <script>
+	var response_message;
 	var markers = {'init': 'init'};
+	var object_list = {'init': 0};
+	var client_diff_request_json = {'action': 'client_diff_request', 'object_uuids': object_list};
+    
+	// Create a socket
+	var socket = new WebSocket('ws://localhost:8080/ws');
 	
+	// Message received on the socket
+	socket.onmessage = function(event) {
+		
+		$("#responseDebug").html(JSON.stringify(JSON.parse(event.data), null, 4));
+		
+		response_message = JSON.parse(event.data);
+		//console.log(response_message.client_unknown_objects);
+		
+		// loop through client_unknown_objects
+		if(response_message.client_unknown_objects != null && response_message.client_unknown_objects.length > 0) {
+			for(var k in response_message.client_unknown_objects) {
+				if(object_list[response_message.client_unknown_objects[k].uuid]===undefined) {
+					
+					// populate object list
+					object_list[response_message.client_unknown_objects[k].uuid] = response_message.client_unknown_objects[k].time_modified_since_creation;
+					
+					// decrypt
+					
+					// add to map pins - https://github.com/LDLN/landline-server/blob/master/co.whatisuplabs.ldln/app/views/WebViews/map.html
+					
+				}
+			}
+		}
+		
+		//console.log(object_list);
+		client_diff_request_json.object_uuids = object_list;
+    }
+	
+	// Make the function wait until the connection is made...
+	function waitForSocketConnection(socket, callback){
+	    setTimeout(
+	        function () {
+	            if (socket.readyState === 1) {
+	                console.log("WS connection is made");
+	                if(callback != null){
+	                    callback();
+	                }
+	                return;
+	
+	            } else {
+	                console.log("Waiting for connection...");
+	                waitForSocketConnection(socket, callback);
+	            }
+	
+	        }, 5); // wait 5 milisecond for the connection...
+	}
+	
+	// Sync
 	function getMapPins()
 	{
-		
+		console.log("Getting map pins");
+		$("#requestDebug").html(JSON.stringify(client_diff_request_json, null, 4));
+		socket.send(JSON.stringify(client_diff_request_json));
 	}
+	
+	// Initiate map pin sync on socket open
+	waitForSocketConnection(socket, function(){
+		getMapPins();
+		setInterval(getMapPins, 10000);
+	});
 	
 	
 	var map = L.map('map2').setView([{{.deployment.map_center_lat}}, {{.deployment.map_center_lon}}], {{.deployment.map_zoom_min}});
@@ -52,10 +126,6 @@ html,
     	attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Hosted by <a href="http://ldln.co">LDLN</a>',
     	maxZoom: {{.deployment.map_zoom_max}}
 	}).addTo(map);
-	
-	getMapPins();
-	setInterval(getMapPins, 10000);
-	
 	
 </script>
 
