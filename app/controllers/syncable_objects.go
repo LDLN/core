@@ -28,7 +28,9 @@ func (c SyncableObjects) Map() revel.Result {
 	var deployment map[string]string
 	err = dbd.Find(bson.M{}).One(&deployment)
 	
-	return c.Render(deployment)
+	dek := c.Session["kek"]
+	
+	return c.Render(deployment, dek)
 }
 
 func (c SyncableObjects) ListDataTypes() revel.Result {

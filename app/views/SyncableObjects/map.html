@@ -83,11 +83,14 @@ html,
 					// decrypt
 					var kvp = response_message.client_unknown_objects[k].key_value_pairs;
 					var bsf = CryptoJS.enc.Base64.parse(kvp);
-					var hexdecoded = CryptoJS.enc.Hex.parse(kvp);
-					var decrypted_data = CryptoJS.AES.decrypt(hexdecoded, "i2avxE1a1lCuDgYEYM1c9nrsVKWbf9h5", 
-						{ mode: CryptoJS.mode.CFB });
-					alert(hexdecoded);
-					alert(decrypted_data);
+					var hexdecoded = hex2a(kvp);
+					var decrypted_data = CryptoJS.AES.decrypt(hexdecoded, "{{.dek}}", { mode: CryptoJS.mode.CFB });
+										
+					console.log("hexdecoded: "+hexdecoded);
+					console.log("decrypted_data: "+decrypted_data);
+					
+					var bsfd = CryptoJS.enc.Base64.parse(decrypted_data);
+					console.log("decrypted_data base64-decoded: "+bsfd);
 					
 					// add to map pins - https://github.com/LDLN/landline-server/blob/master/co.whatisuplabs.ldln/app/views/WebViews/map.html
 					
@@ -98,7 +101,16 @@ html,
 		//console.log(object_list);
 		client_diff_request_json.object_uuids = object_list;
     }
-	
+
+	// hex decode
+	function hex2a(hexx) {
+	    var hex = hexx.toString();//force conversion
+	    var str = '';
+	    for (var i = 0; i < hex.length; i += 2)
+	        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	    return str;
+	}
+
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection(socket, callback){
 	    setTimeout(
