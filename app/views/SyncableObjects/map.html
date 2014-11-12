@@ -48,18 +48,12 @@ html,
 
 <link rel="stylesheet" href="/public/css/leaflet.css" />
 <script src="/public/js/leaflet.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/aes.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/core-min.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/enc-utf16-min.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/enc-base64-min.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/mode-cfb-min.js"></script>
-<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/pad-ansix923-min.js"></script>
 
 <script>
 	var response_message;
 	var markers = {'init': 'init'};
 	var object_list = {'init': 0};
-	var client_diff_request_json = {'action': 'client_diff_request', 'object_uuids': object_list};
+	var client_diff_request_json = {'action': 'client_diff_request', 'dek': '{{.dek}}', 'object_uuids': object_list};
 	
 	// Create a socket
 	var socket = new WebSocket('ws://localhost:8080/ws');
@@ -79,18 +73,6 @@ html,
 					
 					// populate object list
 					object_list[response_message.client_unknown_objects[k].uuid] = response_message.client_unknown_objects[k].time_modified_since_creation;
-					
-					// decrypt
-					var kvp = response_message.client_unknown_objects[k].key_value_pairs;
-					var bsf = CryptoJS.enc.Base64.parse(kvp);
-					var hexdecoded = hex2a(kvp);
-					var decrypted_data = CryptoJS.AES.decrypt(hexdecoded, "{{.dek}}", { mode: CryptoJS.mode.CFB });
-										
-					console.log("hexdecoded: "+hexdecoded);
-					console.log("decrypted_data: "+decrypted_data);
-					
-					var bsfd = CryptoJS.enc.Base64.parse(decrypted_data);
-					console.log("decrypted_data base64-decoded: "+bsfd);
 					
 					// add to map pins - https://github.com/LDLN/landline-server/blob/master/co.whatisuplabs.ldln/app/views/WebViews/map.html
 					

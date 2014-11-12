@@ -1,6 +1,11 @@
 package chat
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
+	"encoding/json"
+	"encoding/hex"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
@@ -171,6 +176,24 @@ func (msg_obj *Message) parse(c *Client) {
 					syncable_object_map["object_type"] = result["object_type"]
 					syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
 					syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+					
+					// decrypt
+					if val, ok := dat["dek"]; ok {
+						kv_hex, err := hex.DecodeString(result["key_value_pairs"].(string))
+						if err != nil {
+							log.Println(err)
+						}
+						log.Println(val)
+						kv_plain := decrypt([]byte(dat["dek"].(string)), kv_hex)
+						
+						// unmarshal the json
+						var obj_json map[string]interface{}
+						if err := json.Unmarshal(kv_plain, &obj_json); err != nil {
+							panic(err)
+						}
+	
+						syncable_object_map["key_value_pairs_plain"] = obj_json
+					}
 
 					modified_objects = append(modified_objects, syncable_object_map)
 				}
@@ -198,6 +221,24 @@ func (msg_obj *Message) parse(c *Client) {
 				syncable_object_map["object_type"] = result["object_type"]
 				syncable_object_map["key_value_pairs"] = result["key_value_pairs"]
 				syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+					
+				// decrypt
+				if val, ok := dat["dek"]; ok {
+					kv_hex, err := hex.DecodeString(result["key_value_pairs"].(string))
+					if err != nil {
+						log.Println(err)
+					}
+					log.Println(val)
+					kv_plain := decrypt([]byte(dat["dek"].(string)), kv_hex)
+					
+					// unmarshal the json
+					var obj_json map[string]interface{}
+					if err := json.Unmarshal(kv_plain, &obj_json); err != nil {
+						panic(err)
+					}
+
+					syncable_object_map["key_value_pairs_plain"] = obj_json
+				}
 
 				client_unknown_objects = append(client_unknown_objects, syncable_object_map)
 			}
@@ -287,4 +328,27 @@ func (msg_obj *Message) parse(c *Client) {
 
 	// send server response message
 	//return string(response_json_map[:])
+}
+
+func decodeBase64(s string) []byte {
+	data, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func decrypt(key, text []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err)
+	}
+	if len(text) < aes.BlockSize {
+		panic("ciphertext too short")
+	}
+	iv := text[:aes.BlockSize]
+	text = text[aes.BlockSize:]
+	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb.XORKeyStream(text, text)
+	return decodeBase64(string(text))
 }
