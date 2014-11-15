@@ -202,22 +202,36 @@ func (c SyncableObjects) ListObjects(object_key string) revel.Result {
 	}
 	revel.TRACE.Println(results)
 	
-	//// decrypt key_value_pairs
-	//kv_hex, err := hex.DecodeString(result["key_value_pairs"])
-	//if err != nil {
-	//	revel.TRACE.Println(err)
-	//}
-	//kv_plain := string(decrypt([]byte(c.Session["kek"]), kv_hex))
-	//revel.TRACE.Println(kv_plain)
-	
-	//// convert string of json to json to map
-	//byt := []byte((kv_plain))
-	//var key_values map[string]interface{}
-	//if err := json.Unmarshal(byt, &key_values); err != nil {
-	//	panic(err)
-	//}
+	// decrypt each
+	var object_list []map[string]interface{}
+	for u, result := range results {
+		revel.TRACE.Println(u)
+
+		// object that the client does not know about
+		syncable_object_map := make(map[string]interface{})
+		syncable_object_map["uuid"] = result["uuid"]
+		syncable_object_map["object_type"] = result["object_type"]
+		syncable_object_map["time_modified_since_creation"] = result["time_modified_since_creation"]
+			
+		// decrypt
+		kv_hex, err := hex.DecodeString(result["key_value_pairs"].(string))
+		if err != nil {
+			revel.TRACE.Println(err)
+		}
+		kv_plain := decrypt([]byte(c.Session["kek"]), kv_hex)
 		
-	return c.Render(object_key, results)
+		// unmarshal the json
+		var obj_json map[string]interface{}
+		if err := json.Unmarshal(kv_plain, &obj_json); err != nil {
+			panic(err)
+		}
+
+		syncable_object_map["key_value_pairs_plain"] = obj_json
+
+		object_list = append(object_list, syncable_object_map)
+	}
+		
+	return c.Render(object_key, results, object_list)
 }
 
 

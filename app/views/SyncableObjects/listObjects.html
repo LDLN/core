@@ -7,13 +7,15 @@
 	<thead>
 		<tr>
 			<th>Object</th>
+			<th>Data</th>
 			<th>Actions</th>
 		</tr>
 	</thead>
 	<tbody>
-	{{range $index, $element := .results}}
+	{{range $index, $element := .object_list}}
 		<tr>
 			<td><a href="/types/{{$element.object_type}}/{{$element.uuid}}">{{$element.uuid}}</a></td>
+			<td>{{$element.key_value_pairs_plain}}</td>
 			<td></td>
 		</tr>
 	{{end}}
