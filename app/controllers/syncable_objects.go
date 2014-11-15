@@ -28,6 +28,7 @@ func (c SyncableObjects) Map() revel.Result {
 	var deployment map[string]string
 	err = dbd.Find(bson.M{}).One(&deployment)
 	
+	// set dek var
 	dek := c.Session["kek"]
 	
 	return c.Render(deployment, dek)
@@ -77,8 +78,12 @@ func (c SyncableObjects) CreateObjectForm(object_key string) revel.Result {
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
-		
-	return c.Render(result)
+	
+	// chrome
+	var hide_chrome bool
+	c.Params.Bind(&hide_chrome, "hide_chrome")
+
+	return c.Render(result, hide_chrome)
 }
 
 func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {

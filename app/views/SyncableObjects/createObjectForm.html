@@ -1,5 +1,8 @@
 {{set . "title" .result.object_label}}
-{{template "header.html" .}}
+
+{{if eq .hide_chrome false}}
+	{{template "header.html" .}}
+{{end}}
 
 <form role="form" class="form-horizontal" action="/types/{{.result.object_key}}/create" method="POST" autocomplete="off">
 	
@@ -13,6 +16,15 @@
 		{{if eq $element.type "datetime"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">
 		{{end}}
+		{{if eq $element.type "ll"}}
+			<input class="form-control ll" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "lat"}}
+			<input class="form-control lat" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "lng"}}
+			<input class="form-control lng" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
 		</div>
 	</div>
 	{{end}}
@@ -25,4 +37,6 @@
 	
 </form>
 
-{{template "footer.html" .}}
+{{if eq .hide_chrome false}}
+	{{template "footer.html" .}}
+{{end}}

@@ -4,6 +4,8 @@
 
 module:testrunner
 
+GET		/										SyncableObjects.Map
+
 GET     /setup                                  Web.FirstTimeSetupForm
 POST    /setup                                  Web.FirstTimeSetupAction
 

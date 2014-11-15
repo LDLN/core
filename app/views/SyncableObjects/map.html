@@ -45,16 +45,31 @@ html,
 	</div>
 </div>
 
+<!-- Modal -->
+<div class="modal" id="createBox" tabindex="-1" role="dialog" aria-labelledby="createBoxLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Loading...</h4>
+      </div>
+      <div class="modal-body">
+      	Loading...
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <link rel="stylesheet" href="/public/css/leaflet.css" />
 <script src="/public/js/leaflet.js"></script>
-
 <script>
 	var response_message;
 	var markers = {'init': 'init'};
 	var object_list = {'init': 0};
 	var client_diff_request_json = {'action': 'client_diff_request', 'dek': '{{.dek}}', 'object_uuids': object_list};
-	
+	var tmp_geo = '';
+		
 	// Create a socket
 	var socket = new WebSocket('ws://localhost:8080/ws');
 	
@@ -74,24 +89,25 @@ html,
 					// populate object list
 					object_list[response_message.client_unknown_objects[k].uuid] = response_message.client_unknown_objects[k].time_modified_since_creation;
 					
-					// add to map pins - https://github.com/LDLN/landline-server/blob/master/co.whatisuplabs.ldln/app/views/WebViews/map.html
+					// add to map pins
+					var lat = response_message.client_unknown_objects[k].key_value_pairs_plain.lat;
+					var lng = response_message.client_unknown_objects[k].key_value_pairs_plain.lng;
+					var marker = L.marker([lat, lng]).addTo(map);
 					
+					// map pin tooltip box
+					console.log(response_message.client_unknown_objects[k].key_value_pairs_plain);
+					var popuphtml = "<b>Surname:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Surname+"<br>";
+					popuphtml += "<b>Address:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Address+"<br>";
+					popuphtml += "<b>Has Electricity:</b> <span class='label label-danger'>"+response_message.client_unknown_objects[k].key_value_pairs_plain['Has Electricity']+"</span><br>";
+					marker.bindPopup(popuphtml).openPopup();
 				}
 			}
 		}
 		
+		// add item to known objects list
 		//console.log(object_list);
 		client_diff_request_json.object_uuids = object_list;
     }
-
-	// hex decode
-	function hex2a(hexx) {
-	    var hex = hexx.toString();//force conversion
-	    var str = '';
-	    for (var i = 0; i < hex.length; i += 2)
-	        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-	    return str;
-	}
 
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection(socket, callback){
@@ -123,17 +139,49 @@ html,
 	// Initiate map pin sync on socket open
 	waitForSocketConnection(socket, function(){
 		getMapPins();
-		setInterval(getMapPins, 10000);
+		setInterval(getMapPins, 8000);
 	});
 	
-	
+	// create map
 	var map = L.map('map2').setView([{{.deployment.map_center_lat}}, {{.deployment.map_center_lon}}], {{.deployment.map_zoom_min}});
-	
-	L.tileLayer('http://localhost:8888/v2/{{.deployment.map_mbtiles}}/{z}/{x}/{y}.png', {
+	L.tileLayer('http://'+window.location.hostname+':8888/v2/{{.deployment.map_mbtiles}}/{z}/{x}/{y}.png', {
     	attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Hosted by <a href="http://ldln.co">LDLN</a>',
     	maxZoom: {{.deployment.map_zoom_max}}
 	}).addTo(map);
 	
+	// right click for modal create form
+	map.on('contextmenu', function(e) {
+    	console.log(e.latlng);
+		tmp_geo = e.latlng;
+		$('#createBox').modal({
+			'keyboard': true
+		});
+		$( "#createBox .modal-title" ).html("Create Household");
+		$( "#createBox .modal-body" ).load( "/types/household/create?hide_chrome=true", function() {
+			
+			$("input.ll").val(tmp_geo.lat+","+tmp_geo.lng);
+			$("input.lat").val(tmp_geo.lat);
+			$("input.lng").val(tmp_geo.lng);
+			
+			$("#createBox .modal-body form .form-group:first-child div input").focus();
+			
+			$("#createBox .modal-body form").submit(function (ev) {
+		        $.ajax({
+		            type: $("#createBox .modal-body form").attr('method'),
+		            url: $("#createBox .modal-body form").attr('action'),
+		            data: $("#createBox .modal-body form").serialize(),
+		            success: function (data) {
+						getMapPins();
+		                $('#createBox').modal('hide');
+		            }
+		        });
+		
+		        ev.preventDefault();
+		    });
+		});
+	});
+	
 </script>
+
 
 {{template "footer.html" .}}
