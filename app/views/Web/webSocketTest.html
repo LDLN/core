@@ -31,7 +31,7 @@
 
 <script type="text/javascript">
   // Create a socket
-  var socket = new WebSocket('ws://localhost:8080/ws')
+  var socket = new WebSocket('ws://'+window.location.hostname+':8080/ws')
 
   // Message received on the socket
   socket.onmessage = function(event) {
