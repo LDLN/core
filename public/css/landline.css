@@ -84,7 +84,8 @@ a {
  */
 
 /* Hide for mobile, show later */
-.sidebar {
+.sidebar,
+h1.page-header {
   display: none;
 }
 @media (min-width: 768px) {
@@ -93,6 +94,9 @@ a {
   }
   .navbar {
 	display: none;
+  }
+  h1.page-header {
+    display: block;
   }
   .sidebar {
     position: fixed;

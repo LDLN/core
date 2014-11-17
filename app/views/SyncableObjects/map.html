@@ -90,16 +90,19 @@ html,
 					object_list[response_message.client_unknown_objects[k].uuid] = response_message.client_unknown_objects[k].time_modified_since_creation;
 					
 					// add to map pins
-					var lat = response_message.client_unknown_objects[k].key_value_pairs_plain.lat;
-					var lng = response_message.client_unknown_objects[k].key_value_pairs_plain.lng;
-					var marker = L.marker([lat, lng]).addTo(map);
-					
-					// map pin tooltip box
-					console.log(response_message.client_unknown_objects[k].key_value_pairs_plain);
-					var popuphtml = "<b>Surname:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Surname+"<br>";
-					popuphtml += "<b>Address:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Address+"<br>";
-					popuphtml += "<b>Has Electricity:</b> <span class='label label-danger'>"+response_message.client_unknown_objects[k].key_value_pairs_plain['Has Electricity']+"</span><br>";
-					marker.bindPopup(popuphtml).openPopup();
+					if(response_message.client_unknown_objects[k].key_value_pairs_plain.lat != undefined && response_message.client_unknown_objects[k].key_value_pairs_plain.lng != undefined) {
+						
+						var lat = response_message.client_unknown_objects[k].key_value_pairs_plain.lat;
+						var lng = response_message.client_unknown_objects[k].key_value_pairs_plain.lng;
+						var marker = L.marker([lat, lng]).addTo(map);
+						
+						// map pin tooltip box
+						console.log(response_message.client_unknown_objects[k].key_value_pairs_plain);
+						var popuphtml = "<b>Surname:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Surname+"<br>";
+						popuphtml += "<b>Address:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Address+"<br>";
+						popuphtml += "<b>Has Electricity:</b> <span class='label label-danger'>"+response_message.client_unknown_objects[k].key_value_pairs_plain['Has Electricity']+"</span><br>";
+						marker.bindPopup(popuphtml).openPopup();
+					}
 				}
 			}
 		}

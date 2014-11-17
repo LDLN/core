@@ -3,7 +3,7 @@
 	<head>
 	    <meta charset="utf-8">
 	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 	    <title>{{.title}}</title>
 	
 	    <!-- Bootstrap -->
@@ -36,7 +36,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img src="/public/img/logo.png" alt="LDLN" />{{if .session.deployment_name}}{{.session.deployment_name}}{{else}}LDLN Base Station{{end}}</a>
+          <a class="navbar-brand" href="#"><img src="/public/img/logo.png" alt="LDLN" />{{if .title}}{{.title}}{{end}}</a>
         </div>
         <div class="navbar-collapse collapse">
           {{if .session.username}}
