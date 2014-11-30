@@ -218,7 +218,7 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		c.Session["deployment_unit"] = resultd["unit"];
 
 		// redirect
-		return c.Redirect(Web.WebSocketTest)
+		return c.Redirect(SyncableObjects.Map)
 	}
 
 	// redirect
