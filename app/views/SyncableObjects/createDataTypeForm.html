@@ -1,35 +1,54 @@
 {{set . "title" "Create Object Type"}}
 {{template "header.html" .}}
 
+<script type="text/javascript">
+$(document).ready(function() {
+	
+	var fieldAddButtonCol = $('.fieldAddButtonCol').html();
+	$('#fieldAddButton').remove();
+	
+	var fieldTemplate = $('#fieldList').html();
+	
+	$(".fieldAddButtonCol").append(fieldAddButtonCol);
+	
+	$("#fieldAddButton").click(function() {
+		$("#fieldList").append(fieldTemplate);
+	});
+});
+</script>
+
 <form role="form" class="form-horizontal" action="/types/create" method="POST" autocomplete="off">
 	
 	<div class="form-group">
-    		<label class="control-label col-sm-2" for="object_label">Object Name</label>
+    	<label class="control-label col-sm-2" for="object_label">Object Name</label>
 		<div class="col-sm-4">
 			<input class="form-control" type="text" name="object_label" id="object_label">
 		</div>
 	</div>
 	
 	<div class="form-group">
-    		<label class="control-label col-sm-2" for="weight">Weight</label>
+    	<label class="control-label col-sm-2" for="weight">Weight</label>
 		<div class="col-sm-2">
 			<input class="form-control" type="number" name="weight" id="weight">
 		</div>
 	</div>
 	
 	<div class="form-group">
-    		<label class="control-label col-sm-2" for="">Form Elements</label>
-		<div class="col-sm-6">
-	    		<table class="table">
+    	<label class="control-label col-sm-2" for="">Form Elements</label>
+		<div class="col-sm-8">
+	    	<table class="table">
 				<thead>
 					<tr>
 						<th>Type</th>
 						<th>Label</th>
-						<th>Weight</th>
+						<!--<th>Weight</th>-->
+						<th>Options</th>
+						<th>Default</th>
+						<th>Required</th>
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody id="fieldList">
 					<tr>
 						<td>
 							<select class="form-control">
@@ -37,20 +56,45 @@
 								<option value="longtext">Long Text</option>
 								<option value="datetime">Date and Time</option>
 								<option value="checkbox">Checkbox</option>
+								<option value="image">Radio</option>
 								<option value="image">Image</option>
 								<option value="option">Options</option>
+								<option value="map_location">Map Location</option>
+								<option value="current_location">Current Location</option>
 								<option value="lat">Latitude</option>
 								<option value="lng">Longitude</option>
+								<option value="lng">Color</option>
+								<option value="lng">Category Graphic</option>
+								<option value="lng">File Upload</option>
+								<option value="lng">Video</option>
+								<option value="lng">Location Trail</option>
+								<option value="lng">Rich Text</option>
 							</select>
 						</td>
 						<td>
 							<input class="form-control" type="text" name="object_label" id="object_label">
 						</td>
-						<td>
+						<!--<td>
 							<input class="form-control" type="number" name="weight" id="weight">
+						</td>-->
+						<td>
+							<!--<textarea class="form-control" rows="3"></textarea>-->
 						</td>
 						<td>
-							<button type="button" class="btn btn-default">Add</button>
+							<input class="form-control" type="text" name="default" id="default">
+						</td>
+						<td>  
+							<div class="checkbox">
+							    <label>
+							      <input type="checkbox" id="checkboxWarning" value="option1">
+							      &nbsp;
+							    </label>
+							  </div>
+						</td>
+						<td class="fieldAddButtonCol">
+							<button id="fieldAddButton" type="button" class="btn btn-default">
+								<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add
+							</button>
 						</td>
 					</tr>
 				</tbody>
@@ -60,7 +104,7 @@
 	
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
-        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="submit" class="btn btn-primary btn-lg">Submit</button>
       </div>
     </div>
 	
