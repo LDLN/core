@@ -1,6 +1,6 @@
 {{set . "title" .result.object_type}}
 {{template "header.html" .}}
 	
-{{.key_values}}
+{{raw .key_values.Body}}
 	
 {{template "footer.html" .}}

@@ -9,9 +9,15 @@
 	{{range $index, $element := .result.schema}}
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="{{$element.label}}">{{$element.label}}</label>
-		<div class="col-sm-4">
+		<div class="col-sm-7">
 		{{if eq $element.type "text"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "longtext"}}
+			<textarea class="form-control" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
+		{{end}}
+		{{if eq $element.type "richtext"}}
+			<textarea class="form-control richtext" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
 		{{end}}
 		{{if eq $element.type "datetime"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">
@@ -31,9 +37,21 @@
 	
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
-        <button type="submit" class="btn btn-default">Submit</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
       </div>
     </div>
+	
+	<!-- CKEditor -->
+	<script src="/public/ckeditor/ckeditor.js"></script>
+	<script src="/public/ckeditor/adapters/jquery.js"></script>
+	<script>
+		$(document).ready(function() {
+			$('textarea.richtext').ckeditor({
+				uiColor: '#f1f1f1'
+			});
+		});
+	</script>
+	<!-- END CKEditor -->
 	
 </form>
 
