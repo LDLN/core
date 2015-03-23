@@ -4,23 +4,33 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	
-	var fieldAddButtonCol = $('.fieldAddButtonCol').html();
-	$('#fieldAddButton').remove();
+	//var fieldAddButtonCol = $('.fieldAddButtonCol').html();
+	//$('#fieldAddButton').remove();
 	
 	var fieldTemplate = $('#fieldList').html();
 	
-	$(".fieldAddButtonCol").append(fieldAddButtonCol);
+	//$(".fieldAddButtonCol").append(fieldAddButtonCol);
 	
 	$("#fieldAddButton").click(function() {
 		$("#fieldList").append(fieldTemplate);
+		
+		$(".fieldRemoveButton").unbind( "click" );
+		setRemove();
 	});
+	
+	function setRemove() {
+		$(".fieldRemoveButton").click(function(){
+			$(this).parent().parent().remove();
+		});
+	}
+	setRemove();
 });
 </script>
 
 <form role="form" class="form-horizontal" action="/types/create" method="POST" autocomplete="off">
 	
 	<div class="form-group">
-    	<label class="control-label col-sm-2" for="object_label">Object Name</label>
+    	<label class="control-label col-sm-2" for="object_label">Object Type Name</label>
 		<div class="col-sm-4">
 			<input class="form-control" type="text" name="object_label" id="object_label">
 		</div>
@@ -29,7 +39,7 @@ $(document).ready(function() {
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="weight">Weight</label>
 		<div class="col-sm-2">
-			<input class="form-control" type="number" name="weight" id="weight">
+			<input class="form-control" type="number" name="weight" id="weight" value="0">
 		</div>
 	</div>
 	
@@ -39,65 +49,98 @@ $(document).ready(function() {
 	    	<table class="table">
 				<thead>
 					<tr>
-						<th>Type</th>
+						<th></th>
 						<th>Label</th>
+						<th>Type</th>
 						<!--<th>Weight</th>-->
 						<th>Options</th>
-						<th>Default</th>
 						<th>Required</th>
+						<th>Default</th>
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
 				<tbody id="fieldList">
 					<tr>
 						<td>
+							<span class="glyphicon glyphicon-move" style="padding-top:9px;"></span>
+						</td>
+						<td>
+							<input class="form-control required" type="text" name="object_label" id="object_label">
+						</td>
+						<td>
 							<select class="form-control">
+								<option value=""></option>
 								<option value="text">Text</option>
 								<option value="longtext">Long Text</option>
 								<option value="datetime">Date and Time</option>
 								<option value="checkbox">Checkbox</option>
 								<option value="image">Radio</option>
 								<option value="image">Image</option>
-								<option value="option">Options</option>
+								<option value="option">Dropdown</option>
 								<option value="map_location">Map Location</option>
 								<option value="current_location">Current Location</option>
-								<option value="lat">Latitude</option>
-								<option value="lng">Longitude</option>
-								<option value="lng">Color</option>
-								<option value="lng">Category Graphic</option>
-								<option value="lng">File Upload</option>
-								<option value="lng">Video</option>
-								<option value="lng">Location Trail</option>
-								<option value="lng">Rich Text</option>
+								<option value="color">Color</option>
+								<option value="graphic">Category Graphic</option>
+								<option value="file">File Upload</option>
+								<option value="location_trail">Location Trail</option>
+								<option value="richtext">Rich Text</option>
 							</select>
-						</td>
-						<td>
-							<input class="form-control" type="text" name="object_label" id="object_label">
 						</td>
 						<!--<td>
 							<input class="form-control" type="number" name="weight" id="weight">
 						</td>-->
 						<td>
-							<!--<textarea class="form-control" rows="3"></textarea>-->
-						</td>
-						<td>
-							<input class="form-control" type="text" name="default" id="default">
+							<table class="table table-condensed">
+								<thead>
+									<tr>
+										<th>Value</th>
+										<th>Default</th>
+									<tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td><input name="optionValue1" class="form-control" type="text"></td>
+										<td><input name="optionDefault1" type="checkbox"></td>
+									</tr>
+								</tbody>
+								<tfoot>
+									<tr>
+										<td colspan="2">
+											<button type="button" class="btn btn-default btn-sm optionAddButton">
+												<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add Option
+											</button>
+										</td>
+									</tr>
+								<tfoot>
+							</table>
 						</td>
 						<td>  
 							<div class="checkbox">
 							    <label>
-							      <input type="checkbox" id="checkboxWarning" value="option1">
-							      &nbsp;
+							        <input type="checkbox" id="checkboxWarning" value="option1">
+							        &nbsp;
 							    </label>
-							  </div>
+							</div>
 						</td>
-						<td class="fieldAddButtonCol">
-							<button id="fieldAddButton" type="button" class="btn btn-default">
-								<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add
+						<td>
+							<input class="form-control" type="text" name="default" id="default">
+						</td>
+						<td class="fieldRemoveButtonCol">
+							<button type="button" class="btn btn-default fieldRemoveButton">
+								<span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span> Remove
 							</button>
 						</td>
 					</tr>
 				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="7">
+							<button id="fieldAddButton" type="button" class="btn btn-default">
+								<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add Element
+							</button>
+						</td>
+					</tr>
+				</tfoot>
 			</table>
 		</div>
 	</div>

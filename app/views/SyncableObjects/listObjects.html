@@ -1,7 +1,7 @@
-{{set . "title" .object_key}}
+{{set . "title" .object_type.object_label}}
 {{template "header.html" .}}
 
-<a href="/types/{{.object_key}}/create" class="btn btn-default">Add New {{.object_key}}</a>
+<a href="/types/{{.object_key}}/create" class="btn btn-default">Add New {{.object_type.object_label}}</a>
 
 <table class="table table-striped">
 	<thead>

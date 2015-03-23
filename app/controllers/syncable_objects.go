@@ -212,12 +212,23 @@ func (c SyncableObjects) ListObjects(object_key string) revel.Result {
 	defer session.Close()
 	
 	// query
+	dbs := session.DB("landline").C("Schemas")
+	
+	var object_type map[string]interface{}
+	err = dbs.Find(bson.M{"object_key": object_key}).One(&object_type)
+	if err != nil {
+		revel.TRACE.Println(err)
+	}
+	
+	
 	dbc := session.DB("landline").C("SyncableObjects")
+	
 	var results []map[string]interface{}
 	err = dbc.Find(bson.M{"object_type": object_key}).All(&results)
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
+	
 	revel.TRACE.Println(results)
 	
 	// decrypt each
@@ -249,7 +260,7 @@ func (c SyncableObjects) ListObjects(object_key string) revel.Result {
 		object_list = append(object_list, syncable_object_map)
 	}
 		
-	return c.Render(object_key, results, object_list)
+	return c.Render(object_type, object_key, results, object_list)
 }
 
 
