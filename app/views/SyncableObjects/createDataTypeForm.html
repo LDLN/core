@@ -8,7 +8,7 @@ $(document).ready(function() {
 	//$('#fieldAddButton').remove();
 	
 	var fieldTemplate = $('#fieldList').html();
-	
+		
 	//$(".fieldAddButtonCol").append(fieldAddButtonCol);
 	
 	$("#fieldAddButton").click(function() {
@@ -16,6 +16,9 @@ $(document).ready(function() {
 		
 		$(".fieldRemoveButton").unbind( "click" );
 		setRemove();
+		
+		setOptionAdd();
+		setOptionRemove();
 	});
 	
 	function setRemove() {
@@ -24,6 +27,36 @@ $(document).ready(function() {
 		});
 	}
 	setRemove();
+	
+	
+	
+	
+	var optionTemplate = $('.optionList').html();
+	//$('.optionList').remove();
+		
+	function setOptionAdd() {
+		$(".form-builder-option-add-button").unbind( "click" );
+		$(".form-builder-option-add-button").click(function() {
+	
+			$(this).parent().parent().parent().parent().children('.optionList').append(optionTemplate);
+			
+			
+			setOptionRemove();
+			
+			
+			setOptionAdd();
+		});
+	}
+	
+	function setOptionRemove() {
+		$(".optionRemoveButton").unbind( "click" );
+		$(".optionRemoveButton").click(function(){
+			$(this).parent().parent().remove();
+		});
+	}
+	setOptionRemove();
+	setOptionAdd();
+	
 });
 </script>
 
@@ -37,22 +70,14 @@ $(document).ready(function() {
 	</div>
 	
 	<div class="form-group">
-    	<label class="control-label col-sm-2" for="weight">Weight</label>
-		<div class="col-sm-2">
-			<input class="form-control" type="number" name="weight" id="weight" value="0">
-		</div>
-	</div>
-	
-	<div class="form-group">
     	<label class="control-label col-sm-2" for="">Form Elements</label>
-		<div class="col-sm-8">
+		<div class="col-sm-10">
 	    	<table class="table">
 				<thead>
 					<tr>
 						<th></th>
-						<th>Label</th>
 						<th>Type</th>
-						<!--<th>Weight</th>-->
+						<th>Label</th>
 						<th>Options</th>
 						<th>Required</th>
 						<th>Default</th>
@@ -65,48 +90,53 @@ $(document).ready(function() {
 							<span class="glyphicon glyphicon-move" style="padding-top:9px;"></span>
 						</td>
 						<td>
-							<input class="form-control required" type="text" name="object_label" id="object_label">
-						</td>
-						<td>
-							<select class="form-control">
+							<select class="form-control form-builder-type">
 								<option value=""></option>
 								<option value="text">Text</option>
 								<option value="longtext">Long Text</option>
 								<option value="datetime">Date and Time</option>
+								<option value="number">Number</option>
 								<option value="checkbox">Checkbox</option>
-								<option value="image">Radio</option>
+								<option value="radio">Radio</option>
 								<option value="image">Image</option>
 								<option value="option">Dropdown</option>
 								<option value="map_location">Map Location</option>
 								<option value="current_location">Current Location</option>
 								<option value="color">Color</option>
-								<option value="graphic">Category Graphic</option>
+								<option value="icon">Icon</option>
 								<option value="file">File Upload</option>
 								<option value="location_trail">Location Trail</option>
 								<option value="richtext">Rich Text</option>
+								<option value="markdown">Markdown</option>
 							</select>
 						</td>
-						<!--<td>
-							<input class="form-control" type="number" name="weight" id="weight">
-						</td>-->
 						<td>
-							<table class="table table-condensed">
+							<input class="form-control form-builder-label required" type="text" name="object_label" id="object_label">
+						</td>
+						<td>
+							<table class="table table-condensed form-builder-options">
 								<thead>
 									<tr>
 										<th>Value</th>
 										<th>Default</th>
+										<th></th>
 									<tr>
 								</thead>
-								<tbody>
-									<tr>
-										<td><input name="optionValue1" class="form-control" type="text"></td>
-										<td><input name="optionDefault1" type="checkbox"></td>
+								<tbody class="optionList">
+									<tr class="form-builder-option">
+										<td><input class="form-control form-builder-option-value" type="text"></td>
+										<td><input class="form-builder-option-default" type="checkbox"></td>
+										<td>
+											<button type="button" class="btn btn-default optionRemoveButton">
+											<span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
+										</button>
+										</td>
 									</tr>
 								</tbody>
 								<tfoot>
 									<tr>
-										<td colspan="2">
-											<button type="button" class="btn btn-default btn-sm optionAddButton">
+										<td colspan="3">
+											<button type="button" class="btn btn-default btn-sm form-builder-option-add-button">
 												<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add Option
 											</button>
 										</td>
@@ -117,13 +147,13 @@ $(document).ready(function() {
 						<td>  
 							<div class="checkbox">
 							    <label>
-							        <input type="checkbox" id="checkboxWarning" value="option1">
+							        <input class="form-builder-required" type="checkbox" id="checkboxWarning" value="option1">
 							        &nbsp;
 							    </label>
 							</div>
 						</td>
 						<td>
-							<input class="form-control" type="text" name="default" id="default">
+							<input class="form-control form-builder-default" type="text" name="default" id="default">
 						</td>
 						<td class="fieldRemoveButtonCol">
 							<button type="button" class="btn btn-default fieldRemoveButton">

@@ -5,31 +5,58 @@
 {{end}}
 
 <form role="form" class="form-horizontal" action="/types/{{.result.object_key}}/create" method="POST" autocomplete="off">
-	
+								
 	{{range $index, $element := .result.schema}}
 	<div class="form-group">
     	<label class="control-label col-sm-2" for="{{$element.label}}">{{$element.label}}</label>
-		<div class="col-sm-7">
+		<div class="col-sm-9">
 		{{if eq $element.type "text"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">
 		{{end}}
 		{{if eq $element.type "longtext"}}
 			<textarea class="form-control" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
 		{{end}}
-		{{if eq $element.type "richtext"}}
-			<textarea class="form-control richtext" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
-		{{end}}
 		{{if eq $element.type "datetime"}}
 			<input class="form-control" type="text" name="{{$element.label}}" id="{{$element.label}}">
 		{{end}}
-		{{if eq $element.type "ll"}}
-			<input class="form-control ll" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{if eq $element.type "number"}}
+			<input class="form-control" type="number" name="{{$element.label}}" id="{{$element.label}}">
 		{{end}}
-		{{if eq $element.type "lat"}}
-			<input class="form-control lat" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{if eq $element.type "checkbox"}}
+			<input class="" type="checkbox" name="{{$element.label}}" id="{{$element.label}}">
 		{{end}}
-		{{if eq $element.type "lng"}}
-			<input class="form-control lng" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{if eq $element.type "radio"}}
+			<input class="" type="radio" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "image"}}
+			
+		{{end}}
+		{{if eq $element.type "option"}}
+			
+		{{end}}
+		{{if eq $element.type "map_location"}}
+			<input class="form-control map_location" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "current_location"}}
+			<input class="form-control current_location" type="text" name="{{$element.label}}" id="{{$element.label}}" disabled>
+		{{end}}
+		{{if eq $element.type "color"}}
+			<input class="form-control color" type="text" name="{{$element.label}}" id="{{$element.label}}">
+		{{end}}
+		{{if eq $element.type "icon"}}
+			
+		{{end}}
+		{{if eq $element.type "file"}}
+			
+		{{end}}
+		{{if eq $element.type "location_trail"}}
+			
+		{{end}}
+		{{if eq $element.type "richtext"}}
+			<textarea class="form-control richtext" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
+		{{end}}
+		{{if eq $element.type "markdown"}}
+			<textarea class="form-control markdown" name="{{$element.label}}" id="{{$element.label}}" rows="3"></textarea>
 		{{end}}
 		</div>
 	</div>
@@ -38,6 +65,7 @@
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-default">Cancel</button>
       </div>
     </div>
 	
