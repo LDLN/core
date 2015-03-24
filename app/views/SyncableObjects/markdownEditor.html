@@ -1,0 +1,210 @@
+{{set . "title" "Markdown Editor"}}
+{{template "header.html" .}}
+
+  <script src="/public/markdown-editor/marked.js"></script>
+  <script src="/public/markdown-editor/highlight.pack.js"></script>
+  <script src="/public/markdown-editor/codemirror/lib/codemirror.js"></script>
+  <script src="/public/markdown-editor/codemirror/xml/xml.js"></script>
+  <script src="/public/markdown-editor/codemirror/markdown/markdown.js"></script>
+  <script src="/public/markdown-editor/codemirror/gfm/gfm.js"></script>
+  <script src="/public/markdown-editor/codemirror/javascript/javascript.js"></script>
+  <script src="/public/markdown-editor/rawinflate.js"></script>
+  <script src="/public/markdown-editor/rawdeflate.js"></script>
+  <link rel="stylesheet" href="/public/markdown-editor/codemirror/lib/codemirror.css">
+  <link rel="stylesheet" href="/public/markdown-editor/default.css">
+
+  <style>
+    .CodeMirror pre{
+    }
+    #in, .CodeMirror{
+      overflow: auto;
+	  height:100%;
+    }
+    .CodeMirror-scroll {
+      height: 100%;
+      min-height: 100%;
+    }
+
+    #out{
+      overflow: auto;
+      padding: 10px;
+      padding-left: 20px;
+    }
+
+    @media screen and (max-width: 1024px) {
+      #in {
+        display: none;
+      }
+      #out {
+        padding-left: 10px;
+      }
+    }
+
+    .view #in {
+      display: none;
+    }
+    .view #out {
+      left: 0;
+      padding-left: 10px;
+    }
+  </style>
+
+<div class="row">
+  <div id="in" class="col-sm-6">
+	<form>
+		<textarea id="code"># (GitHub-Flavored) Markdown Editor
+
+Basic useful feature list:
+
+ * Ctrl/Cmd + S to save the file
+ * Drag and drop a file into here to load it
+ * File contents are saved in the URL so you can share files
+
+
+I'm no good at writing sample / filler text, so go write something yourself.
+
+Look, a list!
+
+ * foo
+ * bar
+ * baz
+
+And here's some code!
+
+```javascript
+$(function(){
+  $('div').html('I am a div.');
+});
+```
+
+This is [on GitHub](https://github.com/jbt/markdown-editor) so let me know if I've b0rked it somewhere.
+
+
+Props to Mr. Doob and his [code editor](http://mrdoob.com/projects/code-editor/), from which
+the inspiration to this, and some handy implementation hints, came.
+
+### Stuff used to make this:
+
+ * [marked](https://github.com/chjj) for Markdown parsing
+ * [CodeMirror](http://codemirror.net/) for the awesome syntax-highlighted editor
+ * [highlight.js](http://softwaremaniacs.org/soft/highlight/en/) for syntax highlighting in output code blocks
+ * [js-deflate](https://github.com/dankogai/js-deflate) for gzipping of data to make it fit in URLs
+	  </textarea>
+	</form>
+  </div>
+  <div id="out" class="col-sm-6">
+  </div>
+</div>
+
+  <script>
+    var URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+    navigator.saveBlob = navigator.saveBlob || navigator.msSaveBlob || navigator.mozSaveBlob || navigator.webkitSaveBlob;
+    window.saveAs = window.saveAs || window.webkitSaveAs || window.mozSaveAs || window.msSaveAs;
+
+    // Because highlight.js is a bit awkward at times
+    var languageOverrides = {
+      js: 'javascript',
+      html: 'xml'
+    }
+
+    marked.setOptions({
+      highlight: function(code, lang){
+        if(languageOverrides[lang]) lang = languageOverrides[lang];
+        return hljs.LANGUAGES[lang] ? hljs.highlight(lang, code).value : code;
+      }
+    });
+
+    function update(e){
+      var val = e.getValue();
+
+      setOutput(val);
+
+      clearTimeout(hashto);
+      hashto = setTimeout(updateHash, 1000);
+    }
+
+    function setOutput(val){
+      val = val.replace(/<equation>((.*?\n)*?.*?)<\/equation>/ig, function(a, b){
+        return '<img src="http://latex.codecogs.com/png.latex?' + encodeURIComponent(b) + '" />';
+      });
+
+      document.getElementById('out').innerHTML = marked(val);
+    }
+
+    var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+      mode: 'gfm',
+      lineNumbers: true,
+      matchBrackets: true,
+      lineWrapping: true,
+      theme: 'default',
+      onChange: update
+    });
+
+    document.addEventListener('drop', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      var theFile = e.dataTransfer.files[0];
+      var theReader = new FileReader();
+      theReader.onload = function(e){
+        editor.setValue(e.target.result);
+      };
+
+      theReader.readAsText(theFile);
+    }, false);
+
+    function save(){
+      var code = editor.getValue();
+      var blob = new Blob([code], { type: 'text/plain' });
+      saveBlob(blob);
+    }
+
+    function saveBlob(blob){
+      var name = "untitled.md";
+      if(window.saveAs){
+        window.saveAs(blob, name);
+      }else if(navigator.saveBlob){
+        navigator.saveBlob(blob, name);
+      }else{
+        url = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.setAttribute("href",url);
+        link.setAttribute("download",name);
+        var event = document.createEvent('MouseEvents');
+        event.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+        link.dispatchEvent(event);
+      }
+    }
+
+    document.addEventListener('keydown', function(e){
+      if(e.keyCode == 83 && (e.ctrlKey || e.metaKey)){
+        e.preventDefault();
+        save();
+        return false;
+      }
+    })
+
+    var hashto;
+
+    function updateHash(){
+      window.location.hash = btoa(RawDeflate.deflate(unescape(encodeURIComponent(editor.getValue()))))
+    }
+
+    if(window.location.hash){
+      var h = window.location.hash.replace(/^#/, '');
+      if(h.slice(0,5) == 'view:'){
+        setOutput(decodeURIComponent(escape(RawDeflate.inflate(atob(h.slice(5))))));
+        document.body.className = 'view';
+      }else{
+        editor.setValue(decodeURIComponent(escape(RawDeflate.inflate(atob(h)))))
+        update(editor);
+        editor.focus();
+      }
+    }else{
+      update(editor);
+      editor.focus();
+    }
+
+  </script>
+
+{{template "footer.html" .}}

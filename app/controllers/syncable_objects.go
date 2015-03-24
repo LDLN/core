@@ -263,6 +263,10 @@ func (c SyncableObjects) ListObjects(object_key string) revel.Result {
 	return c.Render(object_type, object_key, results, object_list)
 }
 
+func (c SyncableObjects) MarkdownEditor() revel.Result {
+	return c.Render()
+}
+
 
 
 

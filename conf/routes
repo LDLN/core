@@ -29,6 +29,8 @@ GET     /types/:object_key                      SyncableObjects.ListObjects
 
 GET		/map									SyncableObjects.Map
 
+GET     /markdown_editor                		SyncableObjects.MarkdownEditor
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
