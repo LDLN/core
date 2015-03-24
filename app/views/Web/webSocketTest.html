@@ -1,33 +1,35 @@
 {{set . "title" "WebSocket Test"}}
 {{template "header.html" .}}
+<div class="row">
 
-<div class="form-group btn-group">
-  <button type="button" class="btn btn-default" id="client_get_users">client_get_users</button>
-  <button type="button" class="btn btn-default" id="client_get_schemas">client_get_schemas</button>
-  <button type="button" class="btn btn-default" id="client_diff_request">client_diff_request</button>
-  <button type="button" class="btn btn-default" id="client_update_request">client_update_request</button>
-</div>
-
-<div class="form-group">
-	<div class="controls">
-		<a id="send_btn" class="btn btn-primary">Send</a>
+	<div class="form-group btn-group col-sm-12">
+	  <button type="button" class="btn btn-default" id="client_get_users">client_get_users</button>
+	  <button type="button" class="btn btn-default" id="client_get_schemas">client_get_schemas</button>
+	  <button type="button" class="btn btn-default" id="client_diff_request">client_diff_request</button>
+	  <button type="button" class="btn btn-default" id="client_update_request">client_update_request</button>
 	</div>
-</div>
-
-<div class="form-group">
-	<label class="control-label" for="requestBody">Request</label>
-	<div class="controls">
-		<textarea id="requestBody" class="form-control" cols="140" rows="14"></textarea>
+	
+	<div class="form-group col-sm-12">
+		<div class="controls">
+			<a id="send_btn" class="btn btn-primary">Send</a>
+		</div>
 	</div>
-</div>
-
-<div class="form-group">
-	<label class="control-label" for="responseBody">Response</label>
-	<div class="controls">
-		<textarea id="responseBody" class="form-control" cols="140" rows="70"></textarea>
+	
+	<div class="form-group col-sm-4">
+		<label class="control-label" for="requestBody">Request</label>
+		<div class="controls">
+			<textarea id="requestBody" class="form-control" cols="140" rows="14"></textarea>
+		</div>
 	</div>
-</div>
+	
+	<div class="form-group col-sm-8">
+		<label class="control-label" for="responseBody">Response</label>
+		<div class="controls">
+			<textarea id="responseBody" class="form-control" cols="140" rows="70"></textarea>
+		</div>
+	</div>
 
+</div>
 
 <script type="text/javascript">
   // Create a socket
