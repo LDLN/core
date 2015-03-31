@@ -175,17 +175,25 @@ func (c SyncableObjects) ViewObject(object_key, uuid string) revel.Result {
 	}
 	defer session.Close()
 	
-	// query
-	dbc := session.DB("landline").C("SyncableObjects")
-	var result map[string]string
-	err = dbc.Find(bson.M{"uuid": uuid, "object_type": object_key}).One(&result)
+	// query types
+	schemasdb := session.DB("landline").C("Schemas")
+	var schema map[string]interface{}
+	err = schemasdb.Find(bson.M{"object_key": object_key}).One(&schema)
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
-	revel.TRACE.Println(result)
+	
+	// query objects
+	dbc := session.DB("landline").C("SyncableObjects")
+	var object map[string]string
+	err = dbc.Find(bson.M{"uuid": uuid, "object_type": object_key}).One(&object)
+	if err != nil {
+		revel.TRACE.Println(err)
+	}
+	revel.TRACE.Println(object)
 	
 	// decrypt key_value_pairs
-	kv_hex, err := hex.DecodeString(result["key_value_pairs"])
+	kv_hex, err := hex.DecodeString(object["key_value_pairs"])
 	if err != nil {
 		revel.TRACE.Println(err)
 	}
@@ -199,7 +207,7 @@ func (c SyncableObjects) ViewObject(object_key, uuid string) revel.Result {
 		panic(err)
 	}
 		
-	return c.Render(result, key_values)
+	return c.Render(object, key_values, schema)
 }
 
 func (c SyncableObjects) ListObjects(object_key string) revel.Result {

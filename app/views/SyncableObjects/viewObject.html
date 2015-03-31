@@ -1,6 +1,78 @@
-{{set . "title" .result.object_type}}
+{{if .key_values.Title }}
+	{{set . "title" .key_values.Title}}
+{{else}}}
+	{{set . "title" .schema.object_label}}
+{{end}}
+}
 {{template "header.html" .}}
-	
-{{raw .key_values.Body}}
+
+{{range $index, $element := .schema.schema}}
+<dl class="">
+		{{ $label := $element.label }}		
+		{{ $content := index $.key_values $label }}		
+		{{if $content}}
+			{{if ne $label "Title"}}
+				{{if ne $label "Body"}}
+					<dt>{{ $label }}</dt>
+				{{end}}
+				<dd>
+					{{if eq $element.type "title"}}
+						<h1>{{$content}}</h1>
+					{{end}}
+					{{if eq $element.type "text"}}
+						{{$content}}
+					{{end}}
+					{{if eq $element.type "longtext"}}
+						{{nl2br $content}}
+					{{end}}
+					{{if eq $element.type "datetime"}}
+						
+					{{end}}
+					{{if eq $element.type "number"}}
+						
+					{{end}}
+					{{if eq $element.type "checkbox"}}
+						
+					{{end}}
+					{{if eq $element.type "radio"}}
+						
+					{{end}}
+					{{if eq $element.type "image"}}
+						
+					{{end}}
+					{{if eq $element.type "option"}}
+						
+					{{end}}
+					{{if eq $element.type "map_location"}}
+					
+					{{end}}
+					{{if eq $element.type "current_location"}}
+					
+					{{end}}
+					{{if eq $element.type "color"}}
+					
+					{{end}}
+					{{if eq $element.type "icon"}}
+						
+					{{end}}
+					{{if eq $element.type "file"}}
+						
+					{{end}}
+					{{if eq $element.type "location_trail"}}
+						
+					{{end}}
+					{{if eq $element.type "richtext"}}
+						{{raw $content}}
+					{{end}}
+					{{if eq $element.type "markdown"}}
+						{{$content}}
+					{{end}}
+				</dd>
+				<hr>
+			{{end}}
+		{{end}}
+</dl>
+{{end}}
+
 	
 {{template "footer.html" .}}
