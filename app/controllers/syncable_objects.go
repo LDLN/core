@@ -128,7 +128,7 @@ func (c SyncableObjects) CreateObjectAction(object_key string) revel.Result {
 	revel.TRACE.Println(key_values_string)
 	
 	// encrypt json string
-	kv_string_encrypted := hex.EncodeToString(encrypt([]byte(c.Session["kek"]), key_values_map))
+	kv_string_encrypted := hex.EncodeToString(encrypt([]byte(c.Session["kek"]), []byte(key_values_string)))
 	revel.TRACE.Println(kv_string_encrypted)
 	
 	// test decrypt
