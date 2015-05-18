@@ -5,7 +5,11 @@ import (
 	"github.com/tarm/serial"
 	"labix.org/v2/mgo"
 	"encoding/json"
+	"github.com/ldln/landline-basestation/cryptoWrapper"
 )
+
+const username = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
+const password = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
 
 func main() {
 
@@ -45,20 +49,41 @@ func main() {
 			log.Printf("Not a JSON object")
         } else {
 			
+			// get auth
+			username := v["username"].(string)
+			password := v["password"].(string)
+			
 			// create object
 			object_map := make(map[string]interface{})
 			object_map["uuid"] = v["uuid"].(string)
 			object_map["object_type"] = v["object_type"].(string)
-			object_map["key_value_pairs"] = v["key_value_pairs"].(string)
 			object_map["time_modified_since_creation"] = v["time_modified_since_creation"].(float64)
 			
-			// db insert
-			mc := session.DB("landline").C("SyncableObjects")
-			err = mc.Insert(object_map)
+			// encrypted payload
+			// object_map["key_value_pairs"] = v["key_value_pairs"].(string)
+			
+			// plaintext to be encrypted payload
+			byt, err := json.Marshal(v["key_value_pairs_plaintext"].(map[string]interface{}))
 			if err != nil {
 				panic(err)
 			}
-			log.Printf("Inserted object %q into database.", v["uuid"].(string))
+			log.Printf(string(byt[:]))
+			
+			ciphertext := cryptoWrapper.Encrypt(string(byt[:]), username, password)
+			if ciphertext != "" {
+				object_map["key_value_pairs"] = ciphertext
+			
+				// db insert
+				mc := session.DB("landline").C("SyncableObjects")
+				err = mc.Insert(object_map)
+				if err != nil {
+					panic(err)
+				}
+				log.Printf("Inserted object %q into database.", v["uuid"].(string))
+			} else {
+				s.Write([]byte("Encryption failed"))
+				log.Printf("Encryption failed")
+			}
 		}
 	}
 }
