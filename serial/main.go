@@ -8,9 +8,6 @@ import (
 	"github.com/ldln/landline-basestation/cryptoWrapper"
 )
 
-const username = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
-const password = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
-
 func main() {
 
 	// connect to mongodb
