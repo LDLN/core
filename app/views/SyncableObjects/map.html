@@ -100,7 +100,7 @@ html,
 						// map pin tooltip box
 						console.log(response_message.client_unknown_objects[k].key_value_pairs_plain);
 						var popuphtml = "<b>Title:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.Title+"<br>";
-						popuphtml += "<b>Note:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain.['Note']+"<br>";
+						popuphtml += "<b>Note:</b> "+response_message.client_unknown_objects[k].key_value_pairs_plain['Note']+"<br>";
 						//popuphtml += "<b>Has Electricity:</b> <span class='label label-danger'></span><br>";
 						marker.bindPopup(popuphtml).openPopup();
 					}
