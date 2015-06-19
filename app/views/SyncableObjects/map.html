@@ -159,8 +159,8 @@ html,
 		$('#createBox').modal({
 			'keyboard': true
 		});
-		$( "#createBox .modal-title" ).html("Create Household");
-		$( "#createBox .modal-body" ).load( "/types/household/create?hide_chrome=true", function() {
+		$( "#createBox .modal-title" ).html("Create Pin");
+		$( "#createBox .modal-body" ).load( "/types/poi/create?hide_chrome=true", function() {
 			
 			$("input.ll").val(tmp_geo.lat+","+tmp_geo.lng);
 			$("input.lat").val(tmp_geo.lat);
