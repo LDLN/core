@@ -90,10 +90,11 @@ html,
 					object_list[response_message.client_unknown_objects[k].uuid] = response_message.client_unknown_objects[k].time_modified_since_creation;
 					
 					// add to map pins
-					if(response_message.client_unknown_objects[k].key_value_pairs_plain.lat != undefined && response_message.client_unknown_objects[k].key_value_pairs_plain.lng != undefined) {
+					if(response_message.client_unknown_objects[k].key_value_pairs_plain.map_location != undefined) {
 						
-						var lat = response_message.client_unknown_objects[k].key_value_pairs_plain.lat;
-						var lng = response_message.client_unknown_objects[k].key_value_pairs_plain.lng;
+						var latlng = response_message.client_unknown_objects[k].key_value_pairs_plain.map_location.split(',');
+						var lat = latlng[0];
+						var lng = latlng[1];
 						var marker = L.marker([lat, lng]).addTo(map);
 						
 						// map pin tooltip box
@@ -162,9 +163,7 @@ html,
 		$( "#createBox .modal-title" ).html("Create Pin");
 		$( "#createBox .modal-body" ).load( "/types/poi/create?hide_chrome=true", function() {
 			
-			$("input.ll").val(tmp_geo.lat+","+tmp_geo.lng);
-			$("input.lat").val(tmp_geo.lat);
-			$("input.lng").val(tmp_geo.lng);
+			$("input.map_location").val(tmp_geo.lat+","+tmp_geo.lng);
 			
 			$("#createBox .modal-body form .form-group:first-child div input").focus();
 			
