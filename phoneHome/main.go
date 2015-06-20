@@ -43,6 +43,8 @@ func main() {
 	    log.Fatal("websocket.NewClient Error: %s\nResp:%+v", err, resp)
 	}
 	
+	go reader(wsConn)
+	
 	// periodically send diff request
 	for {
 				
@@ -71,11 +73,28 @@ func main() {
 		
 			// send it over websocket
 			wsConn.WriteJSON(response_map)
+			
+			log.Println("Wrote message:")
+			log.Println(response_map)
 		}
 		
 		// rest i need
 		time.Sleep(5000 * time.Millisecond)
 	}
-	
 }
 
+func reader(wsConn *websocket.Conn) {
+	
+	for {
+		m := make(map[string]interface{})
+ 
+		err := wsConn.ReadJSON(&m)
+		if err != nil {
+			log.Println("Error reading json.", err)
+		}
+ 
+		log.Println("Got message:")
+		log.Println(m)
+	}
+	
+}
