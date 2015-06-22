@@ -23,7 +23,7 @@ func main() {
 	defer session.Close()
 	
 	// connect to socket
-	u, err := url.Parse("http://localhost:8080/ws")
+	u, err := url.Parse("http://184.73.255.76:8080/ws")
 	if err != nil {
 	    log.Fatal(err)
 	}
@@ -85,6 +85,13 @@ func main() {
 
 func reader(wsConn *websocket.Conn) {
 	
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	
 	for {
 		m := make(map[string]interface{})
  
@@ -95,6 +102,50 @@ func reader(wsConn *websocket.Conn) {
  
 		log.Println("Got message:")
 		log.Println(m)
+		
+		// if its server_diff_response
+		if m["action"] != nil {
+			
+			action := m["action"].(string)
+			if action == "server_diff_response" {
+				
+				// parse client_unknown_objects and save them
+				log.Println("PARSING client_unknown_objects")
+				if m["client_unknown_objects"] != nil {
+					for k, v := range m["client_unknown_objects"].([]interface{}) {
+						
+						log.Println(k)
+						object := v.(map[string]interface{})
+						
+						// create object
+						object_map := make(map[string]interface{})
+						object_map["uuid"] = object["uuid"].(string)
+						object_map["object_type"] = object["object_type"].(string)
+						object_map["key_value_pairs"] = object["key_value_pairs"].(string)
+						object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
+					
+		//				err = c.Insert(object_map)
+		//				if err != nil {
+		//					panic(err)
+		//				}
+					}
+				} else {
+					log.Println("client_unknown_objects is empty")
+				}
+				
+				// for each server_unknown_object_uuids
+				log.Println("PARSING server_unknown_object_uuids")
+				if m["server_unknown_object_uuids"] != nil {
+					
+					// send back client_update_request with objects array
+					for k, v := range m["server_unknown_object_uuids"].([]interface {}) {
+						
+						log.Println(k)
+						log.Println(v)
+					}
+				}
+			}
+		}
 	}
 	
 }
