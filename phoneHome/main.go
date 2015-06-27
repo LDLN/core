@@ -43,9 +43,24 @@ func main() {
 	    log.Fatal("websocket.NewClient Error: %s\nResp:%+v", err, resp)
 	}
 	
+	// check if this deployment is empty
+	
+		// sync deployment from upstream
+	
+	// else check if upstream has same deployment
+	
+	// else
+
+		// fail
+	
+	// sync users
+	
+	// sync schemas
+	
+	// start the upstream reader
 	go reader(wsConn)
 	
-	// periodically send diff request
+	// periodically send diff request upstream
 	for {
 				
 		// init client_diff_request
@@ -123,11 +138,13 @@ func reader(wsConn *websocket.Conn) {
 						object_map["object_type"] = object["object_type"].(string)
 						object_map["key_value_pairs"] = object["key_value_pairs"].(string)
 						object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
-					
-		//				err = c.Insert(object_map)
-		//				if err != nil {
-		//					panic(err)
-		//				}
+						
+						// insert into database
+						c := session.DB("landline").C("SyncableObjects")
+						err = c.Insert(object_map)
+						if err != nil {
+							panic(err)
+						}
 					}
 				} else {
 					log.Println("client_unknown_objects is empty")
@@ -142,6 +159,8 @@ func reader(wsConn *websocket.Conn) {
 						
 						log.Println(k)
 						log.Println(v)
+						
+						// create response back
 					}
 				}
 			}
