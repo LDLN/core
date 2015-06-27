@@ -131,6 +131,7 @@ func reader(wsConn *websocket.Conn) {
 					
 				case "server_send_users"	:
 				
+					processServerSendUsers(m, session)
 				
 				case "server_send_schemas"	:
 				
@@ -147,6 +148,36 @@ func clientGetRequest(wsConn *websocket.Conn, action string) {
 	
 	wsConn.WriteJSON(messageMap)
 }
+
+func processServerSendUsers(m map[string]interface{}, session *mgo.Session) {
+
+	log.Println("PARSING server_send_users")
+
+	// wholesale replace users collection
+	log.Println("wholesale replace users collection")
+	c := session.DB("landline").C("Users")
+	c.RemoveAll(bson.M{})
+		
+	for k, v := range m["users"].([]interface{}) {
+		
+		log.Println(k)
+		object := v.(map[string]interface{})
+		
+		// create object
+		object_map := make(map[string]interface{})
+		object_map["encrypted_kek"] = object["encrypted_kek"].(string)
+		object_map["encrypted_rsa_private"] = object["encrypted_rsa_private"].(string)
+		object_map["hashed_password"] = object["hashed_password"].(string)
+		object_map["rsa_public"] = object["rsa_public"].(string)
+		object_map["username"] = object["username"].(string)
+		
+		err := c.Insert(object_map)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func processServerDiffResponse(m map[string]interface{}, session *mgo.Session) {
 				
 	// parse client_unknown_objects and save them
