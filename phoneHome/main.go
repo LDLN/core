@@ -65,35 +65,7 @@ func main() {
 	// periodically send diff request upstream
 	for {
 				
-		// init client_diff_request
-		response_map := make(map[string]interface{})
-		response_map["action"] = "client_diff_request"
-		
-		// find syncable object uuids
-		cb := session.DB("landline").C("SyncableObjects")
-		var m_result []map[string]interface{}
-		err = cb.Find(bson.M{}).All(&m_result)
-		if err != nil {
-			log.Println(err)
-		} else {
-			
-			// objects that the clients knows, but the server may not
-			object_uuids := make(map[string]interface{})
-
-			// loop results
-			for u, result := range m_result {
-				log.Println(u)
-				log.Println(result)
-				object_uuids[result["uuid"].(string)] = result["time_modified_since_creation"]
-			}
-			response_map["object_uuids"] = object_uuids
-		
-			// send it over websocket
-			wsConn.WriteJSON(response_map)
-			
-			log.Println("Wrote message:")
-			log.Println(response_map)
-		}
+		clientDiffRequest(wsConn, session)
 		
 		// rest i need
 		time.Sleep(5000 * time.Millisecond)
@@ -127,13 +99,13 @@ func reader(wsConn *websocket.Conn) {
 			switch action {
 				case "server_diff_response":
 				
-					processServerDiffResponse(m, session)
+					processServerDiffResponse(wsConn, m, session)
 					
-				case "server_send_users"	:
+				case "server_send_users":
 				
 					processServerSendUsers(m, session)
 				
-				case "server_send_schemas"	:
+				case "server_send_schemas":
 				
 			}
 		}
@@ -147,6 +119,39 @@ func clientGetRequest(wsConn *websocket.Conn, action string) {
 	messageMap["action"] = action
 	
 	wsConn.WriteJSON(messageMap)
+}
+
+func clientDiffRequest(wsConn *websocket.Conn, session *mgo.Session) {
+		
+	// init client_diff_request
+	response_map := make(map[string]interface{})
+	response_map["action"] = "client_diff_request"
+	
+	// find syncable object uuids
+	cb := session.DB("landline").C("SyncableObjects")
+	var m_result []map[string]interface{}
+	err := cb.Find(bson.M{}).All(&m_result)
+	if err != nil {
+		log.Println(err)
+	} else {
+		
+		// objects that the clients knows, but the server may not
+		object_uuids := make(map[string]interface{})
+
+		// loop results
+		for u, result := range m_result {
+			log.Println(u)
+			log.Println(result)
+			object_uuids[result["uuid"].(string)] = result["time_modified_since_creation"]
+		}
+		response_map["object_uuids"] = object_uuids
+	
+		// send it over websocket
+		wsConn.WriteJSON(response_map)
+		
+		log.Println("Wrote message:")
+		log.Println(response_map)
+	}
 }
 
 func processServerSendUsers(m map[string]interface{}, session *mgo.Session) {
@@ -178,7 +183,7 @@ func processServerSendUsers(m map[string]interface{}, session *mgo.Session) {
 	}
 }
 
-func processServerDiffResponse(m map[string]interface{}, session *mgo.Session) {
+func processServerDiffResponse(wsConn *websocket.Conn, m map[string]interface{}, session *mgo.Session) {
 				
 	// parse client_unknown_objects and save them
 	log.Println("PARSING client_unknown_objects")
@@ -217,6 +222,14 @@ func processServerDiffResponse(m map[string]interface{}, session *mgo.Session) {
 			log.Println(v)
 			
 			// create response back
+			messageMap := make(map[string]interface{})
+			messageMap["action"] = "client_update_request"
+			
+			// 
+			
+			
+			// write back
+			wsConn.WriteJSON(messageMap)
 		}
 	}
 }
