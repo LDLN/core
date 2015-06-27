@@ -23,7 +23,7 @@ func main() {
 	defer session.Close()
 	
 	// connect to socket
-	u, err := url.Parse("http://184.73.255.76:8080/ws")
+	u, err := url.Parse("http://192.168.0.1:8080/ws")
 	if err != nil {
 	    log.Fatal(err)
 	}
@@ -43,10 +43,13 @@ func main() {
 	    log.Fatal("websocket.NewClient Error: %s\nResp:%+v", err, resp)
 	}
 	
-	// check if this deployment is empty
+	// start the upstream reader
+	go reader(wsConn)
+	
+	// check if local deployment is empty
 	
 		// sync deployment from upstream
-	
+		
 	// else check if upstream has same deployment
 	
 	// else
@@ -54,11 +57,10 @@ func main() {
 		// fail
 	
 	// sync users
+	clientGetRequest(wsConn, "client_get_users")
 	
 	// sync schemas
-	
-	// start the upstream reader
-	go reader(wsConn)
+	clientGetRequest(wsConn, "client_get_schemas")
 	
 	// periodically send diff request upstream
 	for {
@@ -122,49 +124,68 @@ func reader(wsConn *websocket.Conn) {
 		if m["action"] != nil {
 			
 			action := m["action"].(string)
-			if action == "server_diff_response" {
+			switch action {
+				case "server_diff_response":
 				
-				// parse client_unknown_objects and save them
-				log.Println("PARSING client_unknown_objects")
-				if m["client_unknown_objects"] != nil {
-					for k, v := range m["client_unknown_objects"].([]interface{}) {
-						
-						log.Println(k)
-						object := v.(map[string]interface{})
-						
-						// create object
-						object_map := make(map[string]interface{})
-						object_map["uuid"] = object["uuid"].(string)
-						object_map["object_type"] = object["object_type"].(string)
-						object_map["key_value_pairs"] = object["key_value_pairs"].(string)
-						object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
-						
-						// insert into database
-						c := session.DB("landline").C("SyncableObjects")
-						err = c.Insert(object_map)
-						if err != nil {
-							panic(err)
-						}
-					}
-				} else {
-					log.Println("client_unknown_objects is empty")
-				}
-				
-				// for each server_unknown_object_uuids
-				log.Println("PARSING server_unknown_object_uuids")
-				if m["server_unknown_object_uuids"] != nil {
+					processServerDiffResponse(m, session)
 					
-					// send back client_update_request with objects array
-					for k, v := range m["server_unknown_object_uuids"].([]interface {}) {
-						
-						log.Println(k)
-						log.Println(v)
-						
-						// create response back
-					}
-				}
+				case "server_send_users"	:
+				
+				
+				case "server_send_schemas"	:
+				
 			}
 		}
 	}
 	
+}
+
+func clientGetRequest(wsConn *websocket.Conn, action string) {
+	
+	messageMap := make(map[string]interface{})
+	messageMap["action"] = action
+	
+	wsConn.WriteJSON(messageMap)
+}
+func processServerDiffResponse(m map[string]interface{}, session *mgo.Session) {
+				
+	// parse client_unknown_objects and save them
+	log.Println("PARSING client_unknown_objects")
+	if m["client_unknown_objects"] != nil {
+		for k, v := range m["client_unknown_objects"].([]interface{}) {
+			
+			log.Println(k)
+			object := v.(map[string]interface{})
+			
+			// create object
+			object_map := make(map[string]interface{})
+			object_map["uuid"] = object["uuid"].(string)
+			object_map["object_type"] = object["object_type"].(string)
+			object_map["key_value_pairs"] = object["key_value_pairs"].(string)
+			object_map["time_modified_since_creation"] = object["time_modified_since_creation"].(float64)
+			
+			// insert into database
+			c := session.DB("landline").C("SyncableObjects")
+			err := c.Insert(object_map)
+			if err != nil {
+				panic(err)
+			}
+		}
+	} else {
+		log.Println("client_unknown_objects is empty")
+	}
+	
+	// for each server_unknown_object_uuids
+	log.Println("PARSING server_unknown_object_uuids")
+	if m["server_unknown_object_uuids"] != nil {
+		
+		// send back client_update_request with objects array
+		for k, v := range m["server_unknown_object_uuids"].([]interface {}) {
+			
+			log.Println(k)
+			log.Println(v)
+			
+			// create response back
+		}
+	}
 }
