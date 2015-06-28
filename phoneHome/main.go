@@ -9,6 +9,7 @@ import (
 	"net"
 	"github.com/gorilla/websocket"
 	"time"
+	"encoding/json"
 )
 
 func main() {
@@ -38,7 +39,7 @@ func main() {
 	    // your milage may differ
 	    "Sec-WebSocket-Extensions": {"permessage-deflate; client_max_window_bits, x-webkit-deflate-frame"},
 	}
-	wsConn, resp, err := websocket.NewClient(rawConn, u, wsHeaders, 1024, 1024)
+	wsConn, resp, err := websocket.NewClient(rawConn, u, wsHeaders, 2048, 2048)
 	if err != nil {
 	    log.Fatal("websocket.NewClient Error: %s\nResp:%+v", err, resp)
 	}
@@ -98,15 +99,15 @@ func reader(wsConn *websocket.Conn) {
 			action := m["action"].(string)
 			switch action {
 				case "server_diff_response":
-				
+					log.Println("RECEIVED server_diff_response")
 					processServerDiffResponse(wsConn, m, session)
 					
 				case "server_send_users":
-				
+					log.Println("RECEIVED server_send_users")
 					processServerSendUsers(m, session)
-				
+					
 				case "server_send_schemas":
-				
+					log.Println("RECEIVED server_send_schemas")
 			}
 		}
 	}
@@ -140,8 +141,7 @@ func clientDiffRequest(wsConn *websocket.Conn, session *mgo.Session) {
 
 		// loop results
 		for u, result := range m_result {
-			log.Println(u)
-			log.Println(result)
+			_ = u
 			object_uuids[result["uuid"].(string)] = result["time_modified_since_creation"]
 		}
 		response_map["object_uuids"] = object_uuids
@@ -150,7 +150,8 @@ func clientDiffRequest(wsConn *websocket.Conn, session *mgo.Session) {
 		wsConn.WriteJSON(response_map)
 		
 		log.Println("Wrote message:")
-		log.Println(response_map)
+		jsonString, _ := json.Marshal(response_map)
+		log.Println(string(jsonString))
 	}
 }
 
@@ -190,6 +191,7 @@ func processServerDiffResponse(wsConn *websocket.Conn, m map[string]interface{},
 	if m["client_unknown_objects"] != nil {
 		for k, v := range m["client_unknown_objects"].([]interface{}) {
 			
+			log.Println("A client_unknown_object:")
 			log.Println(k)
 			object := v.(map[string]interface{})
 			
@@ -215,21 +217,41 @@ func processServerDiffResponse(wsConn *websocket.Conn, m map[string]interface{},
 	log.Println("PARSING server_unknown_object_uuids")
 	if m["server_unknown_object_uuids"] != nil {
 		
-		// send back client_update_request with objects array
-		for k, v := range m["server_unknown_object_uuids"].([]interface {}) {
+		log.Println(m["server_unknown_object_uuids"])
+		
+		// create response back
+		messageMap := make(map[string]interface{})
+		messageMap["action"] = "client_update_request"
+		
+		// find object the server does not have
+		var serverNeeds []map[string]interface{}
+		c := session.DB("landline").C("SyncableObjects")
+		
+		log.Println("all server needs:")
+		log.Println(m["server_unknown_object_uuids"])
 			
-			log.Println(k)
-			log.Println(v)
-			
-			// create response back
-			messageMap := make(map[string]interface{})
-			messageMap["action"] = "client_update_request"
-			
-			// 
-			
-			
-			// write back
-			wsConn.WriteJSON(messageMap)
+		err := c.Find(bson.M{"uuid": bson.M{"$in":  m["server_unknown_object_uuids"]}}).All(&serverNeeds)
+		if err != nil {
+			panic(err)
 		}
+			
+		// send back client_update_request with objects array
+		var objects []interface{}
+		for _, v := range serverNeeds {
+			object := make(map[string]interface{})
+			object["uuid"] = v["uuid"]
+			object["key_value_pairs"] = v["key_value_pairs"]
+			object["object_type"] = v["object_type"]
+			object["time_modified_since_creation"] = v["time_modified_since_creation"]
+			objects = append(objects, object)
+		}
+		messageMap["objects"] = objects
+		
+		// write back
+		wsConn.WriteJSON(messageMap)
+		
+		log.Println("Wrote message:")
+		jsonString, _ := json.Marshal(messageMap)
+		log.Println(string(jsonString))
 	}
 }
