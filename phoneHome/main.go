@@ -10,9 +10,36 @@ import (
 	"github.com/gorilla/websocket"
 	"time"
 	"encoding/json"
+	"github.com/hashicorp/mdns"
+	"fmt"
+	"strings"
+	"strconv"
 )
 
 func main() {
+    
+	// Make a channel for results and start listening
+	entriesCh := make(chan *mdns.ServiceEntry, 4)
+	go func() {
+	    for entry := range entriesCh {
+	        fmt.Printf("Gots new entry: %v\n", entry.Name)
+			
+			if strings.Contains(entry.Name, "LDLN\\ Basestation") {
+				
+				clientConnect(entry.Host, entry.Port)
+			}
+	    }
+	}()
+	
+	// Start the lookup
+	for {
+		mdns.Lookup("_http._tcp", entriesCh)
+		time.Sleep(60000 * time.Millisecond)
+	}
+	defer close(entriesCh)
+}
+
+func clientConnect(host string, port int) {
 	
 	log.Printf("LDLN phone home...")
 
@@ -24,7 +51,10 @@ func main() {
 	defer session.Close()
 	
 	// connect to socket
-	u, err := url.Parse("http://192.168.0.1:8080/ws")
+	s := []string{"http://", host, ":", strconv.Itoa(port), "/ws"};
+    wsurl := strings.Join(s, "")
+	
+	u, err := url.Parse(wsurl)
 	if err != nil {
 	    log.Fatal(err)
 	}
