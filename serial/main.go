@@ -39,6 +39,14 @@ func main() {
         }
         log.Printf("Incoming on serial: %q", buf[:n])
 		
+		// split by double pipes /
+		// first part is user:pass
+		// second part is object type
+		// third part is key/value pairs, separated by pipes |
+		// each key/value pair is seperated by :
+		// i.e. user:pass/memo/timestamp:xxx|gps:xxx|humidity:xxx|temp:xxx|soilsensor:xxx|dfo10sensor:xxx|gyro:xxx
+		// i.e. user:pass/object_type/timestamp:xxx|gps:xxx|humidity:xxx|temp:xxx|soilsensor:xxx|dfo10sensor:xxx|gyro:xxx
+		
 		// convert string to JSON to map[string]interface{}
 		v := make(map[string]interface{})
 		err := json.Unmarshal(buf[:n], &v)
