@@ -27,12 +27,12 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
-	"github.com/revel/revel"
 	"io"
+	"strings"
+
+	"github.com/revel/revel"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"strings"
-	"github.com/nu7hatch/gouuid"
 )
 
 const salt = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
@@ -59,7 +59,7 @@ func checkIfSetupIsEligible() bool {
 	dbu := session.DB("landline").C("Users")
 	var resultu map[string]string
 	err = dbu.Find(bson.M{}).One(&resultu)
-	
+
 	// cannot do setup if users exist
 	if err != nil {
 		return true
@@ -70,43 +70,43 @@ func checkIfSetupIsEligible() bool {
 
 func (c Web) FirstTimeSetupForm() revel.Result {
 
-	if(!checkIfSetupIsEligible()) {
+	if !checkIfSetupIsEligible() {
 		c.Flash.Error("Basestation is already setup")
 		return c.Redirect(Web.LoginForm)
 	}
-	
+
 	return c.Render()
 }
 
 func (c Web) FirstTimeSetupAction(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max, username, password, confirm_password string) revel.Result {
 
-	if(!checkIfSetupIsEligible()) {
+	if !checkIfSetupIsEligible() {
 		c.Flash.Error("Basestation is already setup")
 		return c.Redirect(Web.LoginForm)
 	}
-	
+
 	// create deployment
-	if(createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max)) {
-		
+	if createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max) {
+
 		// create new key for organization
 		skek := randString(32)
-		
+
 		// create first user account
-		if(createUser(username, password, skek)) {
+		if createUser(username, password, skek) {
 			c.Flash.Success("Organization and user created")
 		} else {
 			c.Flash.Error("Error generating user")
 		}
-		
+
 	} else {
 		c.Flash.Error("Error creating organization")
 	}
-	
+
 	return c.Redirect(Web.LoginForm)
 }
 
 func createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_lat, org_map_center_lon, org_map_zoom_min, org_map_zoom_max string) bool {
-	
+
 	// connect to mongodb
 	session, err := mgo.Dial("localhost")
 	if err != nil {
@@ -133,12 +133,12 @@ func createDeployment(org_title, org_subtitle, org_mbtiles_file, org_map_center_
 	if err != nil {
 		panic(err)
 	}
-	
-	return true;
+
+	return true
 }
 
 func (c Web) requireAuth() bool {
-	if(c.Session["username"] == "" || c.Session["kek"] == "") {
+	if c.Session["username"] == "" || c.Session["kek"] == "" {
 		revel.TRACE.Println("User not authd")
 		return false
 	}
@@ -171,11 +171,11 @@ func hashPassword(username, password string) string {
 }
 
 func (c Web) LoginForm() revel.Result {
-	
-	if(checkIfSetupIsEligible()) {
+
+	if checkIfSetupIsEligible() {
 		return c.Redirect(Web.FirstTimeSetupForm)
 	}
-	
+
 	return c.Render()
 }
 
@@ -223,17 +223,17 @@ func (c Web) LoginAction(username, password string) revel.Result {
 		revel.TRACE.Println(username)
 		revel.TRACE.Println(kek)
 		revel.TRACE.Println(priv)
-		
+
 		// get deployment
 		dbd := session.DB("landline").C("Deployments")
 		var resultd map[string]string
 		err = dbd.Find(bson.M{}).One(&resultd)
-		
+
 		// save to session
-		c.Session["kek"] = kek;
-		c.Session["username"] = username;
-		c.Session["deployment_name"] = resultd["name"];
-		c.Session["deployment_unit"] = resultd["unit"];
+		c.Session["kek"] = kek
+		c.Session["username"] = username
+		c.Session["deployment_name"] = resultd["name"]
+		c.Session["deployment_unit"] = resultd["unit"]
 
 		// redirect
 		return c.Redirect(SyncableObjects.Map)
@@ -245,29 +245,29 @@ func (c Web) LoginAction(username, password string) revel.Result {
 }
 
 func (c Web) CreateUserForm() revel.Result {
-	if(!c.requireAuth()) {
+	if !c.requireAuth() {
 		return c.Redirect(Web.LoginForm)
 	}
 	return c.Render()
 }
 
 func (c Web) CreateUserAction(username, password, confirm_password string) revel.Result {
-	
-	if(!c.requireAuth()) {
+
+	if !c.requireAuth() {
 		return c.Redirect(Web.LoginForm)
 	}
 
 	// get kek
 	var skek string
-	if(c.Session["kek"] == "") {
+	if c.Session["kek"] == "" {
 		c.Flash.Error("Error generating user")
 		return c.Redirect(Web.CreateUserForm)
 	} else {
-		skek = c.Session["kek"];
+		skek = c.Session["kek"]
 	}
-	
+
 	// create user
-	if(createUser(username, password, skek)) {
+	if createUser(username, password, skek) {
 		c.Flash.Success("User created")
 	} else {
 		c.Flash.Error("Error generating user")
@@ -278,7 +278,7 @@ func (c Web) CreateUserAction(username, password, confirm_password string) revel
 }
 
 func createUser(username, password, skek string) bool {
-	
+
 	// hashed_password
 	hashed_password := hashPassword(username, password)
 
@@ -326,8 +326,8 @@ func createUser(username, password, skek string) bool {
 	if err != nil {
 		panic(err)
 	}
-	
-	return true;
+
+	return true
 }
 
 // from: https://stackoverflow.com/questions/18817336/golang-encrypting-a-string-with-aes-and-base64
@@ -336,13 +336,13 @@ func createUser(username, password, skek string) bool {
 //var iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
 func randString(n int) string {
-    const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-    var bytes = make([]byte, n)
-    rand.Read(bytes)
-    for i, b := range bytes {
-        bytes[i] = alphanum[b % byte(len(alphanum))]
-    }
-    return string(bytes)
+	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	var bytes = make([]byte, n)
+	rand.Read(bytes)
+	for i, b := range bytes {
+		bytes[i] = alphanum[b%byte(len(alphanum))]
+	}
+	return string(bytes)
 }
 
 func encodeBase64(b []byte) string {
@@ -357,33 +357,76 @@ func decodeBase64(s string) []byte {
 	return data
 }
 
+//encrypt the text with the key provided
+//returns a byte array
+//For reference: http://crypto.stackexchange.com/questions/2476/cipher-feedback-mode
 func encrypt(key, text []byte) []byte {
+	//Get a block using the AES and key to be run later
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err)
 	}
+
+	//Encode the text as base64
 	b := encodeBase64(text)
+	//Make an empty slice that is the length of the of the... aes BlockSize and the length of encoded b
+	//Padding should be thought up here
+	//(how the HELL do you figure the length of the encrypted data out on the other end?)
+	//I guess you could take the aes block size (not sure which one it is) and subtract to get the rest?
 	ciphertext := make([]byte, aes.BlockSize+len(b))
+	//Get a reference (pointer) to the initiliazation vector as the first block of the empty ciphertext slice
 	iv := ciphertext[:aes.BlockSize]
+	//This creates a random number reader
+	//Then it reads the random numbers into the iv block from above
+	//The second parameter is a buffer to read into from the Reader, so it just fills the IV with random data
+	//It returns the number of bytes read, then ignores that and checks if there's an error
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		panic(err)
 	}
+
+	//Do the actual encryption. Block is the AES block returned (opaque...)
+	//IV is the random numbers from above
+	//CFB is the resulting encrypted data Stream
 	cfb := cipher.NewCFBEncrypter(block, iv)
+
+	//So... for some reason they now XOR the encrypted data stream with the bytes of the base64 encoded plaintext
 	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(b))
+
+	//According to https://play.golang.org/p/83dbz8bvYw
+	//We should be running crypto/hmac on this before agreeing it's encrypted
 	return ciphertext
 }
 
+//decrypt the text as a byte array with the key provided
+//returns a byte array of the base64 decrypted text
 func decrypt(key, text []byte) []byte {
+	//Get a block using the AES and key to be run later
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err)
 	}
+
+	//Error out if the length of the byte array to be decrypted is less than a block size
+	//This might have to be multiples of the block size if we do padding.
 	if len(text) < aes.BlockSize {
 		panic("ciphertext too short")
 	}
+
+	//Get the IV of the encryption from the first block size
 	iv := text[:aes.BlockSize]
+	//Get the encrypted text from the last block
+	//If it's longer than a single block this would break in horrid ways
 	text = text[aes.BlockSize:]
+
+	//Decrypt the data into CFB using the AES block and IV we've set above
 	cfb := cipher.NewCFBDecrypter(block, iv)
+
+	//Again with the XOR.
+	//This XOR's the decrypted data with the encrypted text
+	//But in the encryption it was XOR'd with the original plaintext
+	//HOW does this work?
 	cfb.XORKeyStream(text, text)
+
+	//return a byte array of the decrypted and base64 decoded text
 	return decodeBase64(string(text))
 }
