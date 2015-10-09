@@ -1,64 +1,19 @@
 package cryptoWrapper
 
 import (
-	"log"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/rand"
-//	"crypto/rsa"
 	"crypto/sha256"
-//	"crypto/x509"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
-	"strings"
 	"encoding/base64"
 	"encoding/hex"
-	"io"
+	"strings"
+	"fmt"
+	"log"
+	"github.com/RNCryptor/RNCryptor-go"
 )
 
 const salt = "Yp2iD6PcTwB6upati0bPw314GrFWhUy90BIvbJTj5ETbbE8CoViDDGsJS6YHMOBq4VlwW3V00GWUMbbV"
 
-func Encrypt(value, username, password string) string {
-	
-	// hashed_password
-	hashed_password := hashPassword(username, password)
-
-	// connect to mongodb
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
-	// find user object
-	dbu := session.DB("landline").C("Users")
-	var result map[string]string
-	err = dbu.Find(bson.M{"username": username, "hashed_password": hashed_password}).One(&result)
-	if(err != nil) {
-		return ""
-	}
-	
-	// decrypt kek
-	ps := []string{password, username, salt}
-	key := []byte(string([]rune(strings.Join(ps, "-"))[0:32]))
-	bdec, err := hex.DecodeString(result["encrypted_kek"])
-	if err != nil {
-		log.Fatal(err)
-	}
-	dek := string(decrypt(key, bdec))
-
-//	// decrypt rsa private
-//	privenc, err := hex.DecodeString(result["encrypted_rsa_private"])
-//	if err != nil {
-//		log.Printf(err)
-//	}
-//	priva := decrypt(key, privenc)
-//	priv, err := x509.ParsePKCS1PrivateKey(priva)
-		
-	return hex.EncodeToString(encrypt([]byte(dek), []byte(value)))
-}
-
-func hashPassword(username, password string) string {
+func HashPassword(username, password string) string {
 
 	ps := []string{password, username, salt}
 
@@ -71,45 +26,59 @@ func hashPassword(username, password string) string {
 	return hashed_password
 }
 
-func encrypt(key, text []byte) []byte {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err)
+// from: https://stackoverflow.com/questions/18817336/golang-encrypting-a-string-with-aes-and-base64
+
+// See recommended IV creation from ciphertext below
+//var iv = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
+
+func RandString(n int) string {
+	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	var bytes = make([]byte, n)
+	rand.Read(bytes)
+	for i, b := range bytes {
+		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
-	b := encodeBase64(text)
-	ciphertext := make([]byte, aes.BlockSize+len(b))
-	iv := ciphertext[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
-	}
-	cfb := cipher.NewCFBEncrypter(block, iv)
-	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(b))
-	return ciphertext
+	return string(bytes)
 }
 
-func decrypt(key, text []byte) []byte {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err)
-	}
-	if len(text) < aes.BlockSize {
-		panic("ciphertext too short")
-	}
-	iv := text[:aes.BlockSize]
-	text = text[aes.BlockSize:]
-	cfb := cipher.NewCFBDecrypter(block, iv)
-	cfb.XORKeyStream(text, text)
-	return decodeBase64(string(text))
-}
-
-func encodeBase64(b []byte) string {
+func EncodeBase64(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func decodeBase64(s string) []byte {
+func DecodeBase64(s string) []byte {
 	data, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		panic(err)
 	}
 	return data
 }
+
+//encrypt the text with the key provided
+//returns a byte array
+//For reference: http://crypto.stackexchange.com/questions/2476/cipher-feedback-mode
+func Encrypt(key, text []byte) []byte {
+
+  encrypted, err := rncryptor.Encrypt(string(key), text)
+  if err != nil {
+    log.Fatalln("error encrypting data: %v", err)
+  } else {
+    log.Println("encrypted: %v\n", string(encrypted))
+  }
+  
+  return encrypted
+}
+
+//decrypt the text as a byte array with the key provided
+//returns a byte array of the base64 decrypted text
+func Decrypt(key, text []byte) []byte {
+  fmt.Printf(string(key))
+  decrypted, err := rncryptor.Decrypt(string(key), text)
+  if err != nil {
+		panic(err)
+	} else {
+    	log.Println("decrypted: %v\n", string(decrypted))
+	} 
+
+  return decrypted
+}
+
