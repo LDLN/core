@@ -27,6 +27,8 @@ import (
 	"strings"
 	"fmt"
 	"log"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
 	"github.com/RNCryptor/RNCryptor-go"
 )
 
@@ -101,3 +103,34 @@ func Decrypt(key, text []byte) []byte {
   return decrypted
 }
 
+func GetKeyFromUsernamePassword(username, password string) []byte {
+	
+	// hashed_password
+	hashed_password := HashPassword(username, password)
+
+	// connect to mongodb
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	// find user object
+	dbu := session.DB("landline").C("Users")
+	var result map[string]string
+	err = dbu.Find(bson.M{"username": username, "hashed_password": hashed_password}).One(&result)
+	if(err != nil) {
+		return nil
+	}
+	
+	// decrypt kek
+	ps := []string{password, username, salt}
+	key := []byte(string([]rune(strings.Join(ps, "-"))[0:32]))
+	bdec, err := hex.DecodeString(result["encrypted_kek"])
+	if err != nil {
+		log.Fatal(err)
+	}
+	dek := Decrypt(key, bdec)
+	
+	return dek
+}
